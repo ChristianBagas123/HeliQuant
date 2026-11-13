@@ -121,7 +121,7 @@ The twelve desk accounts are in the desk table above. Deployed Wasm hashes are i
 
 Each step says what to do and what you should see.
 
-1. **Hire the firm on Agent Market.** Open the listing, hire it with the brief `Analyze NEAR` (price $0). You should receive a Markdown deliverable within the 10-minute SLA containing the decision, the trade ticket if there is one, every desk's vote, the `core.anchor` transaction and a "TEE proof" section.
+1. **Hire the firm on Agent Market.** Open the listing, hire it with the brief `Analyze NEAR` (price $0). You should receive a Markdown deliverable within the 20-minute SLA containing the decision, the trade ticket if there is one, every desk's vote, the `core.anchor` transaction and a "TEE proof" section.
 2. **Look at the latest TEE proofs.** `GET https://agent-production-4fd0.up.railway.app/tee?limit=1` returns the newest cycle. You should see `n_calls` 16 and `n_verified` 16.
 3. **Verify a cycle yourself.** With `requests` and `pynacl` installed:
    ```bash
@@ -176,7 +176,7 @@ flowchart LR
 |---|---|---|
 | **Hire from the web app** | Connect a testnet wallet on `/hire`, take mUSDC from the faucet, deposit it into `core` with `ft_transfer_call` (event `job_created`; a bad deposit is refunded with `job_rejected`). Only the executor account can `trade` the job's funds through the Rhea pool. After the job's end time anyone can call `settle_job`; the payout goes to the client, or becomes claimable with `claim_payout` if the transfer fails. Settlement records the job's result in the firm's reputation | `frontend/src/app/hire`, `contracts/core/src/job.rs`, `contracts/core/src/vault.rs` |
 | **Trades on a hired job** | The agent does not call `trade` on its own. The executor trades a job with `agents/scripts/executor_demo.py` (buy or sell a share of the job balance, `min_amount_out` from the Rhea quote) and recovers a stuck job with `recover_job` / `reconcile_job` | `agents/scripts/executor_demo.py`, `agents/firm/executor_signer.py` |
-| **Hire on NEAR Agent Market** | The worker polls assignments, runs one analysis of the asset in the brief, anchors the decision and submits a Markdown deliverable with the TEE proofs. No user funds move | `agents/firm/market_worker.py` |
+| **Hire on NEAR Agent Market** | The worker polls assignments, runs one analysis of the asset in the brief, anchors the decision and submits a Markdown deliverable with the TEE proofs. A job includes up to 2 rounds of changes, each a fresh analysis; after that the latest report is re-submitted. No user funds move | `agents/firm/market_worker.py` |
 | **Cycle loop** | Every `INTERVAL_MIN` (default 30) the firm analyses the next asset of the basket, seals each desk output with `record_output`, anchors the decision and writes it to Supabase | `agents/app.py`, `agents/firm/organization.py` |
 | **Campaign floor** | Opens and closes small positions from deterministic desk votes after an ordered gate stack and a one-call LLM PM sign-off. Paper at live prices; NEAR, BTC, ETH and XRP also fill on Bitget Demo. Each closed trade is anchored | `agents/firm/campaign.py`, `agents/firm/pm_signoff.py` |
 | **Your own engine** | `agents-LocalReady` runs the same agent on your machine. The web app registers your API keys on it after a NEP-413 signature from `HQ_OWNER_ACCOUNT` (see below) | `agents-LocalReady/`, `agents/firm/nep413.py` |

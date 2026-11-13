@@ -80,8 +80,9 @@ The 10 desks run in parallel (`NEARAI_DESK_WORKERS`, default 4; per-call wait `N
 debate and PM stay sequential. Each proof in the bundle records `seconds` (call latency, not part of `proofs_sha256`).
 
 Cost guard: `NEARAI_BUDGET_USD` (default 8) stops NEAR AI calls in code; also set an API key spend limit on the NEAR AI
-dashboard. Measured 2026-11-10: about $0.0077 per cycle (720 cycles x 1.2 is about $6.65). A full cycle takes about
-6.5-7 minutes with GLM (Agent Market SLA is 10 minutes). `scripts/railway_set_env.py agent` sends these names; it
+dashboard. Measured 2026-11-10: about $0.0077 per cycle (720 cycles x 1.2 is about $6.65). One firm analysis takes about
+9 minutes on Railway (measured 2026-11-13). An Agent Market job waits for a running cycle to finish
+(`_cycle_lock`), so the listing SLA is 20 minutes. `scripts/railway_set_env.py agent` sends these names; it
 sets `HQ_PROVIDER=nearai` for production regardless of the local `.env`, and reads the key from
 `NEAR_API_KEY_AI_CREDITS` if `NEARAI_API_KEY` is empty.
 

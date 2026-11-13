@@ -9,6 +9,10 @@ Alur satu job (dokumen: https://docs.market.near.ai/list-your-agent.md):
   5. Keputusan di-anchor ke NEAR testnet (`core.anchor`, kind `decision`, ref `market:<assignment>`).
   6. `submit` deliverable Markdown: keputusan, tiket, suara desk, record kanonik, hash, dan tautan NearBlocks.
 
+Request changes: satu job mendapat satu analisis plus paling banyak MAX_CHANGE_ROUNDS analisis ulang. Setelah
+batas itu, laporan terakhir dikirim ulang dengan catatan, tanpa analisis baru. Jumlah analisis per assignment
+disimpan di `state_store` (Supabase `hq_state`, kunci `market:<assignment>`) supaya tetap ada setelah deploy ulang.
+
 Token agen dibaca dari `AGENT_MARKET_TOKEN` (`aat_...`). Tanpa token, worker tidak jalan. Saklar
 `MARKET_WORKER=0` mematikannya. Semua kegagalan ditangkap; worker tidak menghentikan siklus firm.
 """
@@ -25,6 +29,7 @@ from typing import Callable
 import requests
 
 from firm import onchain_recorder as orc
+from firm import state_store
 
 BASKET = ["BTC", "ETH", "SOL", "HYPE", "SUI", "XRP", "NEAR"]
 NAMES = {"BITCOIN": "BTC", "ETHEREUM": "ETH", "ETHER": "ETH", "SOLANA": "SOL", "HYPERLIQUID": "HYPE",
@@ -34,6 +39,7 @@ MAX_ATTEMPTS = 3          # analisis gagal berturut-turut sebelum laporan gagal 
 RESUBMIT_GUARD_S = 300    # setelah submit, baris yang sama diabaikan selama ini
 SUBMIT_RETRY_WAITS = (5, 10, 20, 30, 30, 30)   # jeda (detik) antar percobaan submit yang dibalas HTTP 429
 MAX_POLL_DELAY_S = 300    # batas jeda polling setelah HTTP 429 beruntun
+MAX_CHANGE_ROUNDS = 2     # analisis ulang lewat Request changes per job (total analisis = 1 + ini)
 
 
 def base_url() -> str:
@@ -184,6 +190,24 @@ def unsupported_deliverable(brief_title: str) -> str:
     ])
 
 
+def limit_deliverable(last_md: str | None) -> str:
+    """Deliverable setelah batas Request changes habis: catatan di atas, lalu laporan terakhir apa adanya."""
+    note = [
+        "> **Rounds of changes used up.** This job includes one analysis and up to "
+        f"{MAX_CHANGE_ROUNDS} rounds of changes, and all of them were used, so no new analysis was run. "
+        "The latest report is below, unchanged. Hire HeliQuant again for a new analysis.",
+        "",
+    ]
+    return "\n".join(note) + (last_md or "# HeliQuant\n\nThe latest report is in the earlier versions of this job.")
+
+
+def _change_note(ticker: str, round_no: int) -> str:
+    return "\n".join(["## What changed", "",
+                      f"A new full analysis of {ticker} was run for your request for changes "
+                      f"(round {round_no} of {MAX_CHANGE_ROUNDS}). Every section below comes from this new run.",
+                      "", ""])   # diakhiri baris kosong sebelum bagian berikutnya
+
+
 def failed_deliverable(ticker: str) -> str:
     return "\n".join([
         f"# Analysis for {ticker} could not finish",
@@ -224,7 +248,27 @@ class Worker:
         self.pending: dict[str, str] = {}    # assignment -> deliverable yang sudah jadi tetapi submit-nya gagal
         self.consec_429 = 0                  # polling GET yang dibalas 429 berturut-turut
         self.attempts: dict[str, int] = {}
+        self.jobs: dict[str, dict] = {}      # assignment -> {"runs": n, "last": markdown}; salinan dari state_store
         self.stats = {"polls": 0, "submitted": 0, "errors": 0, "last_error": None, "last_poll_utc": None}
+
+    def _job(self, aid: str) -> dict:
+        """Catatan analisis satu assignment. Dibaca dari state_store sekali, lalu disimpan di memori."""
+        if aid not in self.jobs:
+            try:
+                rec = state_store.load(f"market:{aid}", None)
+            except Exception:  # noqa: BLE001 — penyimpanan gagal dianggap job baru
+                rec = None
+            self.jobs[aid] = rec if isinstance(rec, dict) else {"runs": 0}
+        return self.jobs[aid]
+
+    def _record_run(self, aid: str, markdown: str) -> None:
+        rec = self._job(aid)
+        rec["runs"] = int(rec.get("runs") or 0) + 1
+        rec["last"] = markdown
+        try:
+            state_store.save(f"market:{aid}", rec)
+        except Exception as e:  # noqa: BLE001 — hitungan tetap ada di memori
+            self._note_error(f"simpan market:{aid[:8]} gagal: {e}")
 
     def _submit(self, aid: str, markdown: str) -> None:
         """Kirim deliverable. HTTP 429 (batas laju market.near.ai terhadap IP Railway) dicoba ulang dengan jeda
@@ -257,12 +301,25 @@ class Worker:
         if time.time() - self.recent.get(aid, 0) < RESUBMIT_GUARD_S:
             return False
         if aid in self.pending:   # analisis dan anchor sudah selesai, hanya submit yang gagal: kirim ulang tanpa analisis
-            self._submit(aid, self.pending[aid])
+            md = self.pending[aid]
+            self._submit(aid, md)
             self.pending.pop(aid, None)
+            self._record_run(aid, md)
             self.log(f"[market] {aid[:8]} deliverable tertunda berhasil dikirim")
             return True
         if not a.get("startedAt"):
             api("POST", f"/v1/assignments/{aid}/start")
+        runs = int(self._job(aid).get("runs") or 0)
+        if runs > MAX_CHANGE_ROUNDS:   # satu analisis + semua ronde perubahan sudah terpakai
+            self._submit(aid, limit_deliverable(self._job(aid).get("last")))
+            try:
+                api("POST", f"/v1/assignments/{aid}/messages",
+                    {"body": f"This job has used its {MAX_CHANGE_ROUNDS} rounds of changes, so no new analysis was "
+                             "run. I re-submitted the latest report. Hire HeliQuant again for a new analysis."})
+            except MarketError as e:
+                self.log(f"[market] pesan gagal: {e}")
+            self.log(f"[market] {aid[:8]} batas {MAX_CHANGE_ROUNDS} ronde perubahan -> laporan terakhir dikirim ulang")
+            return True
         latest = row.get("latestMessage") or {}
         rework = latest.get("body") if latest.get("senderSide") == "buyer" else ""
         ticker = parse_ticker(rework or "", job.get("title") or "", job.get("description") or "")
@@ -275,20 +332,25 @@ class Worker:
             self._submit(aid, failed_deliverable(ticker))
             self.log(f"[market] {aid[:8]} {ticker} gagal {MAX_ATTEMPTS} kali -> laporan gagal dikirim")
             return True
+        round_txt = f" Round of changes {runs} of {MAX_CHANGE_ROUNDS}." if runs else ""
         try:
             api("POST", f"/v1/assignments/{aid}/messages",
                 {"body": f"Started a full HeliQuant firm analysis for {ticker} (12 desks, debate, PM, risk gates). "
-                         f"The decision will be anchored on NEAR testnet."})
+                         f"The decision will be anchored on NEAR testnet.{round_txt}"})
         except MarketError as e:  # pesan hanya informasi
             self.log(f"[market] pesan gagal: {e}")
-        self.log(f"[market] {aid[:8]} analisis {ticker}")
+        self.log(f"[market] {aid[:8]} analisis {ticker}" + (f" (ronde perubahan {runs})" if runs else ""))
         res = self.analyze(ticker) or {}
         dec = res.get("decision") or {}
         anc = anchor_decision(dec, ticker, aid, send=self.send_anchor)
         md = build_deliverable(ticker, res, anc)
+        if runs:   # versi kedua dan seterusnya dibuka dengan "What changed", tepat di bawah judul
+            title, _, rest = md.partition("\n")
+            md = f"{title}\n\n{_change_note(ticker, runs)}{rest.lstrip(chr(10))}"
         self.pending[aid] = md      # simpan dulu: kalau submit gagal, analisis (dan anchor) tidak diulang
         self._submit(aid, md)
         self.pending.pop(aid, None)
+        self._record_run(aid, md)
         self.log(f"[market] {aid[:8]} {ticker} {str(dec.get('decision', '?')).upper()} terkirim"
                  + (f" · anchor {anc['tx_hash'][:12]}..." if anc.get("sent") else ""))
         if self.on_decision:
