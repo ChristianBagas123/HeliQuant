@@ -4,9 +4,13 @@
 
 NEAR testnet · NEAR AI Cloud (TEE-signed LLM calls) · OutLayer Agent Custody · NEAR Agent Market · Rhea · Allora
 
+### **[▶ Open HeliQuant — heliquant-near.vercel.app](https://heliquant-near.vercel.app)**
+
+[Hire the firm](https://heliquant-near.vercel.app/hire) · [TEE proofs](https://heliquant-near.vercel.app/proof) · [Live trading floor](https://heliquant-near.vercel.app/campaign) · [On-chain ledger](https://heliquant-near.vercel.app/ledger) · [The 13 agents](https://heliquant-near.vercel.app/agents) · [Run your own engine](https://heliquant-near.vercel.app/onboarding)
+
 | Live | Link |
 |---|---|
-| Web app | https://heliquant-near.vercel.app |
+| Web app | [heliquant-near.vercel.app](https://heliquant-near.vercel.app) |
 | Agent service (public read API) | https://agent-production-4fd0.up.railway.app |
 | NEAR Agent Market listing | https://heliquant.market.near.ai |
 | `core` contract | https://testnet.nearblocks.io/address/core.heliquant.testnet |
