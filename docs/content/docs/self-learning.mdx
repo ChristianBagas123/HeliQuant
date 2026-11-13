@@ -1,0 +1,151 @@
+---
+title: Self-learning
+description: Three layers of learning — edge discovery, desk reliability, and tactical fade.
+---
+
+HeliQuant learns at **three layers**. Losses aren't wasted — they're the training signal. The system is
+allowed to hold an **empty** validated-edge registry; promoting a dead edge would be the failure.
+
+## The loop
+
+Every closed decision feeds back into the three layers, and each layer changes how the *next* decision is
+made — what edge is trusted, which desks are weighted, and how each trade is sized, throttled, and timed.
+
+<Mermaid
+  caption="The self-learning loop — every outcome updates three layers that shape the next decision"
+  chart={`
+flowchart TB
+  D[PM decision — ENTER / ABSTAIN]:::node --> T[trade / paper position]:::node
+  T --> O[outcome — TP / SL / TIME]:::gate
+  O --> L1[Layer 1 · edge_lab]:::learn
+  O --> L2[Layer 2 · desk_performance]:::learn
+  O --> L3[Layer 3 · cond_record · asset_perf]:::learn
+  L1 -. validate / demote .-> D
+  L2 -. reliability weight .-> D
+  L3 -. size · frequency · horizon .-> D
+  classDef node fill:#161614,stroke:#c9f24b,color:#f2efe6;
+  classDef gate fill:#1e1e1b,stroke:#c9f24b,color:#f2efe6;
+  classDef learn fill:#1e1e1b,stroke:#c9f24b,color:#c9f24b;
+`}
+/>
+
+## Layer 1 — Edge discovery ("earn the edge")
+
+The `edge_lab` tests a **hypothesis library** (OI-change, price-momentum, funding, order-flow imbalance ×
+contrarian/momentum) against an asset's real perp history under **one gate**:
+
+- cost-aware **out-of-sample** (round-trip ~20 bps: fee + spread + slippage),
+- **5-fold walk-forward**,
+- **outlier-robustness** (drop the single best fold — the edge must still hold),
+- **Benjamini–Hochberg FDR** correction (kills best-of-N false positives).
+
+An edge graduates to `validated_edges.json` (gates real aggression) only when *earned across folds*;
+otherwise it sits in `candidate_edges.json` on **probation**, requiring confirmation on consecutive
+**new-data** cycles. Today the validated registry is empty — on NEAR the edge lab found nothing that clears the
+gate (Finding #5). `candidate_edges.json` holds one older SUI funding-fade entry that still awaits fresh-data proof.
+
+<Mermaid
+  caption="An edge's lifecycle — earned across folds, confirmed on new data, demoted when it decays"
+  chart={`
+stateDiagram-v2
+  [*] --> Hypothesis: from the hypothesis library
+  Hypothesis --> Testing: cost-aware OOS + 5-fold walk-forward
+  Testing --> FDRGate: outlier-robust + Benjamini-Hochberg
+  FDRGate --> Candidate: passes, on probation
+  FDRGate --> Rejected: fails the gate
+  Candidate --> Validated: confirmed on consecutive new-data cycles
+  Validated --> Demoted: decays on fresh data
+  Demoted --> [*]: registry back to empty
+  Rejected --> [*]
+  note right of Validated
+    Gates real aggression.
+    Today EMPTY — no NEAR edge cleared the gate.
+  end note
+`}
+/>
+
+## Layer 2 — Desk reliability
+
+`desk_performance` scores the stance of the nine directional voices (all but Carry, NEAR Fundamentals and
+TimesFM) vs realized direction and assigns a reliability weight
+`0.6–1.4` (≥15 samples, else neutral). The PM weights proven desks heavily and discounts unreliable ones
+— fighting "too many desks = noise". Weights are an **advisory prior**; the gates still bind.
+
+## Layer 3 — Tactical re-map (the live floor)
+
+The continuous campaign learns run-to-run — and it acts on what it learns by changing **size, frequency,
+and hold-time**, concentrating capital on what works and starving what bleeds:
+
+- **cond_record** — every closed trade dials a condition's throttle; a condition with a proven-losing
+  record **in that regime** trades at half size (regime-aware: a short that bled in an up-market isn't
+  penalised in a down-market).
+- **failed_conditions** — a losing round benches a condition with a TTL (forgiven later, so it can
+  re-learn).
+- **asset-performance ladder** — capital *and* frequency tilt to what works: a **cold** asset (losing
+  record) trades **half size** *and* opens only **1 of 3 steps**; a **deep-cold** one is **benched**
+  (periodic probe); a **warm** asset is **boosted** — `1.3×` for a decent proven record (≥55% win, ≥8
+  trades), `1.6×` for a **strong** one (≥66% win) — always **capped below** the `2×` reserved for a
+  validated edge. (A hot recent record earns more capital; it is not mistaken for an edge.)
+- **calibrated TP/SL** — TP/SL distances are *measured* per asset from realized excursions (Maximum
+  Favourable / Adverse Excursion), not guessed. The old fixed 2.5×-ATR TP was reached by only **0–21%**
+  of trades — so a reachable, per-asset TP replaced it (`scripts/95`).
+- **trailing stop** — a trend-follow trade ratchets its stop toward price so a genuine run isn't capped at
+  a fixed TP; contrarian/fade trades keep a fixed TP (meant to snap, not run).
+- **dynamic horizon** — the hold-time adapts to the setup type: a **trend-follow** trade gets room
+  (`HORIZON_TREND_H = 4h`, with a trailing stop + near-TP lock managing the runner), a **contrarian/fade**
+  is short (3h, it snaps fast or the thesis is wrong), a **validated edge** runs (24h).
+- **clear-trend gate** — the floor only trades a **clear** trend, aligned to it; a flat/ambiguous regime
+  **abstains**, and a counter-trend signal flips to the trend-following side.
+
+<Mermaid
+  caption="Tactical layer — each closed trade re-maps size, frequency, and hold-time per asset and condition"
+  chart={`
+flowchart TB
+  C[closed trade — outcome + regime]:::node --> R[record by cond @ regime + asset]:::gate
+  R --> CR[cond_record — losing cond fades to half]:::learn
+  R --> FC[failed_conditions — losing round benched TTL]:::learn
+  R --> AP[asset record]:::gate
+  AP --> WARM[warm/strong winner — boost 1.3x to 1.6x]:::good
+  AP --> COLD[cold loser — half size + open 1 of 3]:::bad
+  AP --> DEEP[deep-cold — bench + periodic probe]:::bad
+  classDef node fill:#161614,stroke:#c9f24b,color:#f2efe6;
+  classDef gate fill:#1e1e1b,stroke:#c9f24b,color:#f2efe6;
+  classDef learn fill:#1e1e1b,stroke:#c9f24b,color:#c9f24b;
+  classDef good fill:#1e1e1b,stroke:#c9f24b,color:#c9f24b;
+  classDef bad fill:#161614,stroke:#8b8b80,color:#8b8b80;
+`}
+/>
+
+## Learning from abstention (it learns even when it *doesn't* trade)
+
+Most systems learn only from trades. HeliQuant also scores its **abstentions**: when the clear-trend gate
+declines a setup, it logs a **shadow** of the would-be trade and judges it at its horizon against real
+price — was abstaining **right** (the skipped trade would have lost) or **wrong** (it would have won)?
+Aggregated per gate (`shadow_record`, surfaced on `/campaign` as `shadow_learning`), this turns idle and
+cooldown time into signal: the firm measures whether its own discipline actually pays, and can tell an
+over-restrictive gate from a protective one. It's scored against **real candles**, so it isn't self-flattery.
+
+<Mermaid
+  caption="Abstention scoring — the firm judges the trades it declined, so even saying no teaches it"
+  chart={`
+flowchart LR
+  A[clear-trend gate ABSTAINS]:::gate --> S[log a shadow of the would-be trade]:::node
+  S --> W[wait its horizon]:::node
+  W --> J{judge vs real price}:::gate
+  J -->|would have lost| R[abstain was RIGHT — discipline paid]:::good
+  J -->|would have won| X[abstain was WRONG — gate too tight]:::bad
+  R --> SR[shadow_record per gate]:::learn
+  X --> SR
+  classDef gate fill:#1e1e1b,stroke:#c9f24b,color:#f2efe6;
+  classDef node fill:#161614,stroke:#8b8b80,color:#f2efe6;
+  classDef good fill:#1e1e1b,stroke:#c9f24b,color:#c9f24b;
+  classDef bad fill:#161614,stroke:#8b8b80,color:#8b8b80;
+  classDef learn fill:#1e1e1b,stroke:#c9f24b,color:#c9f24b;
+`}
+/>
+
+## The honest spine
+
+> Promote on evidence, confirm before you trust, demote when it decays. That's the line between
+> self-learning and self-deception. New hypotheses — including ML — must out-earn the gate; none gets a
+> free pass.

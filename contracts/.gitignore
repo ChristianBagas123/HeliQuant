@@ -1,0 +1,3 @@
+# Kunci privat hasil deploy dan keadaan sementara skrip deploy
+deployments/keys.env
+deployments/.state/

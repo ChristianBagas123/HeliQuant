@@ -1,0 +1,24 @@
+---
+title: Findings & Insights
+description: 19 honest, data-backed discoveries from building an autonomous trading firm on NEAR — including what doesn't work.
+---
+
+> Every finding traces to a real run or probe. **We publish what DOESN'T work too** — honesty is the
+> product. The discipline that reports a failed edge is worth more than the edge.
+
+The full report — all **19** findings, each with its source file or measured run — lives in one place:
+**`Findings/FINDINGS.md`** at the root of this repository. This page only summarizes it, so the two never drift.
+
+## In short
+
+- **Smart money & whales** — on Rhea's wNEAR pools, trade direction comes from the token pair, not the `kind`
+  label; the whale threshold decides whether there is any signal at all, and NEAR flow is concentrated.
+- **Alpha & strategies** — on NEAR the edge lab tested funding-fade (**−28.52% OOS**) and price-momentum
+  (**−35.04% OOS**) after costs. Neither passed, the validated registry is empty, and the firm abstains.
+  The regime classifier beats persistence (78.9% vs 76.1%), but accuracy is not profit.
+- **Execution & risk** — gated tickets (R:R ≥ 2, a real invalidation), aggression earned by data, and a
+  token-security veto that fails closed.
+- **NEAR & verifiability** — limited function-call keys, sealed desk outputs, anchored decisions, an escrow
+  vault, and an oracle relay with an honest freshness trade-off.
+- **Method** — honesty by design: deterministic tools compute, LLMs debate, and a firm of twelve analyst
+  voices has its decisions anchored on NEAR.

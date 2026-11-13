@@ -1,0 +1,417 @@
+[
+  {
+    "address": "closemeat6237.near",
+    "pools": [
+      "refv1-4512",
+      "refv1-5515",
+      "refv1-6063",
+      "refv1-6065",
+      "refv2-17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1:wrap.near:100"
+    ],
+    "total_volume_usd": 43575.26,
+    "net_volume_usd": 11242.45,
+    "buy_volume_usd": 27408.85,
+    "sell_volume_usd": 16166.4,
+    "buy_count": 248,
+    "sell_count": 208,
+    "realized_pnl_usd": -108.92,
+    "avg_buy_price": 3.539792,
+    "avg_sell_price": 3.515943,
+    "first_seen_utc": "2026-11-08T23:16:20Z",
+    "last_seen_utc": "2026-11-09T08:08:19Z",
+    "rank_score": 5.8602,
+    "direction_bias": "accumulating"
+  },
+  {
+    "address": "bad24bdb0d5b2d0023e95fe721b51756706f83ade8b99cc550e9592a368838f7",
+    "pools": [
+      "refv1-4512",
+      "refv1-5515",
+      "refv1-6063"
+    ],
+    "total_volume_usd": 86669.24,
+    "net_volume_usd": -50007.36,
+    "buy_volume_usd": 18330.94,
+    "sell_volume_usd": 68338.3,
+    "buy_count": 3,
+    "sell_count": 116,
+    "realized_pnl_usd": -231.99,
+    "avg_buy_price": 3.635011,
+    "avg_sell_price": 3.589008,
+    "first_seen_utc": "2026-11-08T23:15:44Z",
+    "last_seen_utc": "2026-11-09T07:46:01Z",
+    "rank_score": 5.7477,
+    "direction_bias": "distributing"
+  },
+  {
+    "address": "whatdoyoumean.near",
+    "pools": [
+      "refv1-4512",
+      "refv1-5515",
+      "refv1-6063",
+      "refv2-17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1:wrap.near:100"
+    ],
+    "total_volume_usd": 19023.7,
+    "net_volume_usd": -1608.03,
+    "buy_volume_usd": 8707.84,
+    "sell_volume_usd": 10315.86,
+    "buy_count": 71,
+    "sell_count": 44,
+    "realized_pnl_usd": 32.2,
+    "avg_buy_price": 3.594124,
+    "avg_sell_price": 3.607412,
+    "first_seen_utc": "2026-11-08T23:08:10Z",
+    "last_seen_utc": "2026-11-09T08:07:46Z",
+    "rank_score": 5.3418,
+    "direction_bias": "neutral"
+  },
+  {
+    "address": "hollowpine4417.near",
+    "pools": [
+      "refv2-17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1:wrap.near:100"
+    ],
+    "total_volume_usd": 14673.3,
+    "net_volume_usd": 583.68,
+    "buy_volume_usd": 7628.49,
+    "sell_volume_usd": 7044.81,
+    "buy_count": 49,
+    "sell_count": 44,
+    "realized_pnl_usd": 4.61,
+    "avg_buy_price": 3.468644,
+    "avg_sell_price": 3.470915,
+    "first_seen_utc": "2026-11-09T07:59:11Z",
+    "last_seen_utc": "2026-11-09T08:07:29Z",
+    "rank_score": 5.1554,
+    "direction_bias": "neutral"
+  },
+  {
+    "address": "e6bb0ba0850ad9d5126e8b9790b6fc5688463e8bef963e7a3c06433907ebfd34",
+    "pools": [
+      "refv1-4512",
+      "refv1-5515",
+      "refv1-6063",
+      "refv2-17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1:wrap.near:100"
+    ],
+    "total_volume_usd": 18944.47,
+    "net_volume_usd": 9469.41,
+    "buy_volume_usd": 14206.94,
+    "sell_volume_usd": 4737.53,
+    "buy_count": 38,
+    "sell_count": 20,
+    "realized_pnl_usd": -69.52,
+    "avg_buy_price": 3.550811,
+    "avg_sell_price": 3.498704,
+    "first_seen_utc": "2026-11-08T23:16:17Z",
+    "last_seen_utc": "2026-11-09T08:06:20Z",
+    "rank_score": 5.0898,
+    "direction_bias": "accumulating"
+  },
+  {
+    "address": "ijustfuckingdestroyedthem.near",
+    "pools": [
+      "refv1-4512",
+      "refv1-5515",
+      "refv1-6063"
+    ],
+    "total_volume_usd": 21730.4,
+    "net_volume_usd": 21630.25,
+    "buy_volume_usd": 21680.32,
+    "sell_volume_usd": 50.07,
+    "buy_count": 28,
+    "sell_count": 1,
+    "realized_pnl_usd": 0.07,
+    "avg_buy_price": 3.624582,
+    "avg_sell_price": 3.63,
+    "first_seen_utc": "2026-11-08T23:11:11Z",
+    "last_seen_utc": "2026-11-09T07:32:21Z",
+    "rank_score": 5.0683,
+    "direction_bias": "accumulating"
+  },
+  {
+    "address": "wx-cruce.near",
+    "pools": [
+      "refv1-4512",
+      "refv1-5515",
+      "refv1-6063",
+      "refv2-17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1:wrap.near:100"
+    ],
+    "total_volume_usd": 8429.78,
+    "net_volume_usd": 208.44,
+    "buy_volume_usd": 4319.11,
+    "sell_volume_usd": 4110.67,
+    "buy_count": 49,
+    "sell_count": 34,
+    "realized_pnl_usd": -22.13,
+    "avg_buy_price": 3.514852,
+    "avg_sell_price": 3.495931,
+    "first_seen_utc": "2026-11-08T23:17:18Z",
+    "last_seen_utc": "2026-11-09T08:07:47Z",
+    "rank_score": 4.8632,
+    "direction_bias": "neutral"
+  },
+  {
+    "address": "edc80b8044df4af5a05486432be105a1831678aaf419fba43ffc6fe699a0986e",
+    "pools": [
+      "refv1-4512",
+      "refv1-5515",
+      "refv2-17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1:wrap.near:100"
+    ],
+    "total_volume_usd": 7470.75,
+    "net_volume_usd": 4604.1,
+    "buy_volume_usd": 6037.43,
+    "sell_volume_usd": 1433.33,
+    "buy_count": 45,
+    "sell_count": 14,
+    "realized_pnl_usd": -17.41,
+    "avg_buy_price": 3.590168,
+    "avg_sell_price": 3.546566,
+    "first_seen_utc": "2026-11-08T23:30:20Z",
+    "last_seen_utc": "2026-11-09T08:07:25Z",
+    "rank_score": 4.7414,
+    "direction_bias": "accumulating"
+  },
+  {
+    "address": "via-trading.near",
+    "pools": [
+      "refv1-4512",
+      "refv1-5515",
+      "refv1-6063",
+      "refv2-17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1:wrap.near:100"
+    ],
+    "total_volume_usd": 6175.42,
+    "net_volume_usd": -1784.97,
+    "buy_volume_usd": 2195.22,
+    "sell_volume_usd": 3980.2,
+    "buy_count": 20,
+    "sell_count": 16,
+    "realized_pnl_usd": 31.43,
+    "avg_buy_price": 3.541292,
+    "avg_sell_price": 3.591999,
+    "first_seen_utc": "2026-11-08T23:14:27Z",
+    "last_seen_utc": "2026-11-09T08:00:16Z",
+    "rank_score": 4.6002,
+    "direction_bias": "distributing"
+  },
+  {
+    "address": "zerotest.near",
+    "pools": [
+      "refv1-4512",
+      "refv1-5515",
+      "refv1-6063"
+    ],
+    "total_volume_usd": 2080.11,
+    "net_volume_usd": -1356.96,
+    "buy_volume_usd": 361.57,
+    "sell_volume_usd": 1718.53,
+    "buy_count": 66,
+    "sell_count": 69,
+    "realized_pnl_usd": -0.36,
+    "avg_buy_price": 3.620215,
+    "avg_sell_price": 3.616593,
+    "first_seen_utc": "2026-11-08T23:11:47Z",
+    "last_seen_utc": "2026-11-09T07:54:28Z",
+    "rank_score": 4.3829,
+    "direction_bias": "distributing"
+  },
+  {
+    "address": "fa00cce34214a03cc31ae77ef5cc0a6d92b6956cb792774ec83ceb26fbd4b9b0",
+    "pools": [
+      "refv1-4512",
+      "refv1-5515",
+      "refv1-6063",
+      "refv2-17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1:wrap.near:100"
+    ],
+    "total_volume_usd": 3731.84,
+    "net_volume_usd": 1345.46,
+    "buy_volume_usd": 2538.65,
+    "sell_volume_usd": 1193.19,
+    "buy_count": 26,
+    "sell_count": 13,
+    "realized_pnl_usd": -5.75,
+    "avg_buy_price": 3.535757,
+    "avg_sell_price": 3.518718,
+    "first_seen_utc": "2026-11-08T23:16:17Z",
+    "last_seen_utc": "2026-11-09T08:06:35Z",
+    "rank_score": 4.3617,
+    "direction_bias": "accumulating"
+  },
+  {
+    "address": "aggregatedex.near",
+    "pools": [
+      "refv1-4512",
+      "refv1-5515",
+      "refv1-6063",
+      "refv2-17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1:wrap.near:100"
+    ],
+    "total_volume_usd": 4670.32,
+    "net_volume_usd": -3888.58,
+    "buy_volume_usd": 390.87,
+    "sell_volume_usd": 4279.45,
+    "buy_count": 10,
+    "sell_count": 13,
+    "realized_pnl_usd": -1.65,
+    "avg_buy_price": 3.542824,
+    "avg_sell_price": 3.527902,
+    "first_seen_utc": "2026-11-08T23:14:40Z",
+    "last_seen_utc": "2026-11-09T08:06:17Z",
+    "rank_score": 4.3486,
+    "direction_bias": "distributing"
+  },
+  {
+    "address": "7dad72ef20fc837c82be4e6fdbbda47de0ee838a35f1e8c3ba5bddf36b98f009",
+    "pools": [
+      "refv2-17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1:wrap.near:100"
+    ],
+    "total_volume_usd": 2444.14,
+    "net_volume_usd": -187.68,
+    "buy_volume_usd": 1128.23,
+    "sell_volume_usd": 1315.91,
+    "buy_count": 13,
+    "sell_count": 16,
+    "realized_pnl_usd": 0.51,
+    "avg_buy_price": 3.465428,
+    "avg_sell_price": 3.466993,
+    "first_seen_utc": "2026-11-09T07:59:45Z",
+    "last_seen_utc": "2026-11-09T08:07:11Z",
+    "rank_score": 4.1198,
+    "direction_bias": "neutral"
+  },
+  {
+    "address": "hmime.near",
+    "pools": [
+      "refv1-6063"
+    ],
+    "total_volume_usd": 3888.39,
+    "net_volume_usd": 3888.39,
+    "buy_volume_usd": 3888.39,
+    "sell_volume_usd": 0.0,
+    "buy_count": 10,
+    "sell_count": 0,
+    "realized_pnl_usd": 0.0,
+    "avg_buy_price": 3.605265,
+    "avg_sell_price": 0.0,
+    "first_seen_utc": "2026-11-09T01:19:14Z",
+    "last_seen_utc": "2026-11-09T03:18:26Z",
+    "rank_score": 4.0898,
+    "direction_bias": "accumulating"
+  },
+  {
+    "address": "likesdn.near",
+    "pools": [
+      "refv1-4512",
+      "refv1-5515",
+      "refv1-6063"
+    ],
+    "total_volume_usd": 3529.66,
+    "net_volume_usd": 3529.66,
+    "buy_volume_usd": 3529.66,
+    "sell_volume_usd": 0.0,
+    "buy_count": 3,
+    "sell_count": 0,
+    "realized_pnl_usd": 0.0,
+    "avg_buy_price": 3.49,
+    "avg_sell_price": 0.0,
+    "first_seen_utc": "2026-11-09T07:19:45Z",
+    "last_seen_utc": "2026-11-09T07:19:45Z",
+    "rank_score": 3.7863,
+    "direction_bias": "accumulating"
+  },
+  {
+    "address": "lolr.near",
+    "pools": [
+      "refv1-4512",
+      "refv1-5515",
+      "refv1-6063"
+    ],
+    "total_volume_usd": 2003.11,
+    "net_volume_usd": 1363.67,
+    "buy_volume_usd": 1683.39,
+    "sell_volume_usd": 319.72,
+    "buy_count": 5,
+    "sell_count": 1,
+    "realized_pnl_usd": -6.28,
+    "avg_buy_price": 3.590561,
+    "avg_sell_price": 3.52,
+    "first_seen_utc": "2026-11-08T23:34:52Z",
+    "last_seen_utc": "2026-11-09T07:08:03Z",
+    "rank_score": 3.6845,
+    "direction_bias": "accumulating"
+  },
+  {
+    "address": "collector1.near",
+    "pools": [
+      "refv1-4512"
+    ],
+    "total_volume_usd": 2612.84,
+    "net_volume_usd": -2612.84,
+    "buy_volume_usd": 0.0,
+    "sell_volume_usd": 2612.84,
+    "buy_count": 0,
+    "sell_count": 3,
+    "realized_pnl_usd": 0.0,
+    "avg_buy_price": 0.0,
+    "avg_sell_price": 3.481542,
+    "first_seen_utc": "2026-11-09T07:13:41Z",
+    "last_seen_utc": "2026-11-09T07:54:31Z",
+    "rank_score": 3.6557,
+    "direction_bias": "distributing"
+  },
+  {
+    "address": "66fb1d3d0c8b3893b1b53a4a964a8b03586cc0db5c9621014f54efb11068b72e",
+    "pools": [
+      "refv1-5515",
+      "refv1-6063"
+    ],
+    "total_volume_usd": 955.7,
+    "net_volume_usd": -914.89,
+    "buy_volume_usd": 20.4,
+    "sell_volume_usd": 935.29,
+    "buy_count": 2,
+    "sell_count": 13,
+    "realized_pnl_usd": 0.2,
+    "avg_buy_price": 3.586627,
+    "avg_sell_price": 3.621838,
+    "first_seen_utc": "2026-11-08T23:12:19Z",
+    "last_seen_utc": "2026-11-09T06:18:28Z",
+    "rank_score": 3.5686,
+    "direction_bias": "distributing"
+  },
+  {
+    "address": "nalufix.near",
+    "pools": [
+      "refv1-4512"
+    ],
+    "total_volume_usd": 1989.23,
+    "net_volume_usd": -1989.23,
+    "buy_volume_usd": 0.0,
+    "sell_volume_usd": 1989.23,
+    "buy_count": 0,
+    "sell_count": 3,
+    "realized_pnl_usd": 0.0,
+    "avg_buy_price": 0.0,
+    "avg_sell_price": 3.479997,
+    "first_seen_utc": "2026-11-09T07:13:21Z",
+    "last_seen_utc": "2026-11-09T07:46:17Z",
+    "rank_score": 3.5372,
+    "direction_bias": "distributing"
+  },
+  {
+    "address": "00000000012.near",
+    "pools": [
+      "refv1-4512"
+    ],
+    "total_volume_usd": 1634.94,
+    "net_volume_usd": -1634.94,
+    "buy_volume_usd": 0.0,
+    "sell_volume_usd": 1634.94,
+    "buy_count": 0,
+    "sell_count": 4,
+    "realized_pnl_usd": 0.0,
+    "avg_buy_price": 0.0,
+    "avg_sell_price": 3.531305,
+    "first_seen_utc": "2026-11-09T06:15:31Z",
+    "last_seen_utc": "2026-11-09T07:12:33Z",
+    "rank_score": 3.5145,
+    "direction_bias": "distributing"
+  }
+]

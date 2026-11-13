@@ -1,0 +1,19 @@
+# agents-LocalReady — one command: `docker compose up -d`
+services:
+  firm:
+    build:
+      context: .
+      args:
+        HQ_REPO_URL: ${HQ_REPO_URL:?set HQ_REPO_URL in .env}
+    container_name: heliquant-engine
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    restart: unless-stopped
+    volumes:
+      # persist your credentials (credentials.db) + the firm's state across restarts
+      - hq_data:/opt/firm/data
+
+volumes:
+  hq_data:

@@ -1,0 +1,38 @@
+---
+title: Smart-Money Flow desk
+description: Perp positioning (OI / funding / long-short, contrarian to crowding) plus Nansen's macro smart-money netflow.
+---
+
+**Agent token 6** (`smart-money.heliquant.testnet`). The Smart-Money Flow desk reads where informed capital
+is positioned. On NEAR it has **one mode: POSITIONING**. The on-chain DEX flow of NEAR is not here — it is the
+whale watchlist, reported by the [On-chain/Risk desk](/docs/desks/onchain-risk).
+
+## What it reads
+
+`firm/organization.py · tool_smartmoney()` over `firm/smart_money.py`, for any asset with a Bitget perp:
+
+- **POSITIONING** — perp **open interest / funding / long-short**, read **contrarian-to-crowding**. A crowded
+  book sizes the firm down.
+- **Bitget venue snapshot** — mainnet perp funding and open interest (keyless), as cross-venue confirmation.
+- **Nansen macro smart-money** — real netflow of smart-money funds on ETH (macro risk-on / risk-off), cached
+  and printed in the logs so its credit burn is auditable.
+
+## Output (shape)
+
+```json
+{
+  "asset": "NEAR",
+  "mode": "POSITIONING",
+  "flow_score_0_100": 50,
+  "read": "…",
+  "bitget_venue": { "funding_rate_pct": 0.0, "open_interest": 0, "venue": "bitget-mainnet" },
+  "macro_smart_money_nansen": { "read": "…", "net24h_total_usd": 0, "credits_left": 0 }
+}
+```
+
+## Honest caveats
+
+The flow score is an **aggregate** (deliberately manipulation-robust — one wallet can't move it) and is
+**forward-logged**, so it is treated as **context, not a claimed alpha**. For NEAR the cached positioning
+file holds funding history only — Bitget exposes open interest as a live snapshot, not a history — so the
+long/short ratio defaults to a neutral 0.5 and the `detail` field says so. Nothing is fabricated.

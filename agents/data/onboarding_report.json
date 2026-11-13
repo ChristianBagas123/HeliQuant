@@ -1,0 +1,42 @@
+{
+  "NEAR": {
+    "asset": "NEAR",
+    "results": [
+      {
+        "contrarian": false,
+        "train_ic": 0.091,
+        "oos_roi_pct": -35.04,
+        "trades": 80,
+        "win_pct": 48.8,
+        "p_win": 0.4875,
+        "payoff_b": 0.89,
+        "avg_bps": -36.7,
+        "buyhold_pct": 62.62,
+        "rt_fee_bps": 20.0,
+        "pval": 0.7104,
+        "passed": false,
+        "source": "price_mom24",
+        "edge": "price_momentum",
+        "fdr_pass": false
+      },
+      {
+        "contrarian": true,
+        "train_ic": -0.247,
+        "oos_roi_pct": -28.52,
+        "trades": 32,
+        "win_pct": 37.5,
+        "p_win": 0.375,
+        "payoff_b": 1.064,
+        "avg_bps": -91.1,
+        "buyhold_pct": -22.72,
+        "rt_fee_bps": 20.0,
+        "pval": 0.8377,
+        "passed": false,
+        "source": "funding",
+        "edge": "funding_fade",
+        "fdr_pass": false
+      }
+    ],
+    "earned": null
+  }
+}

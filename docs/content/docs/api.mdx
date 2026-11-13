@@ -1,0 +1,82 @@
+---
+title: API Reference
+description: The always-on firm's public read endpoints — the data behind the live dApp.
+---
+
+The firm runs as an always-on FastAPI service. These read endpoints power the live dApp and are public.
+
+> Base URL (live instance): `https://agent-production-4fd0.up.railway.app`
+
+## Live read endpoints
+
+Every endpoint below is defined in `app.py` (the always-on Railway service). All are public, read-only
+`GET`s (a couple also accept `HEAD`) with no auth.
+
+| Endpoint | Returns |
+|---|---|
+| `GET /health` | service heartbeat (plain `ok`; never depends on NEAR) |
+| `GET /health/onchain` | NEAR RPC status, `core` free balance, and per key: allowance, cost of one check, status (`ok` / `low`), failure count, last success. The executor row shows `mode` (`custody` or `key`), account, balance and policy state |
+| `GET /tee` | TEE proof summaries of the latest cycles (`?limit=20`, newest first): `cycle_id`, asset, model, `n_calls`, `n_verified`, `proofs_sha256`, attestation `nonce`. Public, no keys |
+| `GET /tee/{cycle_id}` | the full proof bundle of one cycle: preflight attestation result, one proof per LLM call (`label`, `chat_id`, `signing_address`, `signature`, `verified`) and the raw PM request/response. 404 if unknown. Verify with `scripts/verify_tee.py` |
+| `GET /campaign` | the live trading floor — opened/closed/win%/net, open positions (with desk votes + the **PM sign-off** `pm`), recent closes, `last_scan`, `learned` (cond_record), `entry_gates` (the ordered entry-quality pipeline), `exits_by_reason` (TP/SL/TIME/TRAIL/STALL/NEARTP), `shadow_learning` |
+| `GET /trades` | full trade ledger — every resolved trade (entry/exit/PnL/exit-reason/regime/`anchor_tx`/venue). `?limit=` |
+| `GET /performance` | rigorous analytics on the real ledger — Sharpe/Sortino/Calmar/max-drawdown/profit-factor. Annualised figures are **withheld** until the sample earns them (≥30d & ≥30 trades) — no fantasy CAGR off a short window |
+| `GET /carry` | delta-neutral funding-carry per symbol, computed live from keyless Bitget funding (falls back to the `scripts/88` cache) + `best_harvestable` |
+| `GET /candles` | recent OHLC candles (Bitget mainnet perp, keyless). `?asset=BTC&interval=60&limit=120` — feeds the live-floor candlestick |
+| `GET /sentiment` | free market context — crypto Fear & Greed (alternative.me) + BTC network backdrop (blockchain.com). Context, not edge |
+| `GET /agents` | the on-chain roster — firm + 12 desks (tokens 1–13), kind, ML flag, on-chain reputation + sealed-output count, reliability weight |
+| `GET /desks` | desk reliability weights (`0.6–1.4`, samples, align-rate) |
+| `GET /edges` | the edge registry — `validated` (gates aggression) + `candidate` (on probation) |
+| `GET /onchain` | recent transactions of the `core` contract (NearBlocks API v3, testnet): anchors, desk outputs, job flow. `?account=<name>.testnet` or a 64-hex implicit account (the custody executor) to inspect another account |
+| `GET /status` | loop status — cycles, last-cycle UTC, last error, assets, interval, `validated_edges`, `loop` (automatic cycle on or off), `nearai_spend` (TEE inference spend against the cap) and `market` (Agent Market worker counters: `polls`, `submitted`, `errors`, `last_error`; `null` when the worker is off) |
+| `GET /decisions` | recent LLM-org decisions (rolling buffer of the last ~50: asset/decision/direction/reason) |
+| `GET /logs` | raw service logs, secret-redacted (`?n=400`) |
+| `GET /whales` | the Hyperliquid whale desk: what the top traders hold in BTC, ETH, SOL, HYPE and SUI (NEAR is left out here) |
+| `GET /probe` | which exchange/data hosts are reachable from Railway's IP |
+| `GET /bitget-probe` | signed Bitget Demo v3 check (balance, account mode) from this region. `?order=1` also places and closes a tiny order and needs `?token=<INGEST_TOKEN>` |
+| `GET /bitget-data`, `GET /bitget-crowd` | keyless Bitget mainnet market data and crowd positioning |
+| `GET /run-cycle` | external trigger (uptime pinger, `GET`/`HEAD`) — advances the floor + runs one org cycle when due |
+
+### Onboarding (local engine only, NEP-413)
+
+A self-hosted engine (`agents-LocalReady`) takes its API keys through the web onboarding form. Writes are
+signed, not token-gated: only the NEAR account in `HQ_OWNER_ACCOUNT` can register keys, with its full-access key.
+On the live Railway instance `HQ_OWNER_ACCOUNT` is empty, so both write endpoints answer `503`.
+
+| Endpoint | Purpose |
+|---|---|
+| `GET /setup-status` | `register_enabled`, `auth: "nep413"`, `owner`, `recipient` and the stored credential **names** (never values) |
+| `GET /register/nonce` | one-time nonce (32 bytes, base64, valid 5 minutes) for the signature |
+| `POST /register` | `{auth: {account_id, public_key, signature, nonce}, creds}`. The wallet signs `HeliQuant engine register` + the account + the SHA-256 of the creds (recipient `heliquant.engine`). The engine checks owner, `.testnet`, nonce, the Ed25519 signature and that the key is a full-access key of the owner (NEAR RPC), then stores the creds in its local SQLite |
+
+### Ops / write endpoints (token-gated)
+
+These mutate state and require `?token=<INGEST_TOKEN>` (or a Bearer token for `/ingest`). Used for
+operations, not by the public dApp.
+
+| Endpoint | Purpose |
+|---|---|
+| `POST /ingest` | connector: a local engine POSTs fresh positioning CSVs / carry so the cloud self-learns. `Authorization: Bearer INGEST_TOKEN` |
+| `GET\|POST /campaign/rebaseline` | reset the floor to a clean slate after a config change (once, never to shop for a good run) |
+| `GET\|POST /campaign/unstick` | clear leftover cooldowns / condition-bans so every asset re-evaluates next step |
+| `GET\|POST /campaign/test-open` | force-open one paper position to verify the live mechanics. `?asset=NEAR&side=long` |
+
+## Notes
+
+- **Deterministic shapes.** Every payload is honest: `validated` edges may be `{}`, reputation may read
+  zero (accruing), net P&L may be negative — paper at live prices.
+- **CORS open** for the browser dApp: `GET`, `HEAD`, `OPTIONS` and `POST` from any origin, without credentials. Every `POST` authenticates itself (NEP-413 signature or `INGEST_TOKEN`).
+- **Self-host:** the same service runs from your own `.env` — see [Run Your Own](/docs/self-host).
+
+## Example — on-chain health
+
+```bash
+curl https://agent-production-4fd0.up.railway.app/health/onchain | jq '{network, rpc_ok, core, keys: (.keys | length)}'
+```
+
+```json
+{ "network": "testnet", "rpc_ok": true, "core": { "account": "core.heliquant.testnet" }, "keys": 13 }
+```
+
+> The values move: balances shrink as keys spend allowance, and a negative net on the paper floor is
+> shown as is. The discipline (abstain, fade, demote) is the point; profit only follows a *validated* edge.

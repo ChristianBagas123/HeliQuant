@@ -1,0 +1,60 @@
+---
+title: OI-Contrarian desk
+description: Fade perp open-interest extremes — tradeable only where an asset has earned the edge; on NEAR it is context only.
+---
+
+**Agent token 8.** This desk is the path by which a **validated trading edge** — fading crowded perp
+open-interest — could reach the PM. It only fires when *both* a registry-validated edge **and** a live signal
+align. On NEAR the registry is empty, so today it supplies context only (see the caveats below).
+
+## What it reads
+
+`firm/organization.py · tool_oi_contrarian()`:
+
+- **Validated-edge registry** — `data/validated_edges.json`, produced by a **cost-aware OOS backtest**
+  (`scripts/59` through `firm/edge_lab.py`, or `scripts/39` for the OI backtest). Holds `p_win`, `payoff_b`, `sample_n`, `oos_roi_pct` per asset that survived.
+- **Live OI-contrarian signal** — perp **OI 24h-change quintiles**: top quintile → **SHORT**, bottom
+  quintile → **LONG** (fade the crowd).
+
+## The disciplined gate
+
+<Mermaid
+  caption="Two locks: a validated edge AND a live signal — otherwise it's context, not a trade"
+  chart={`
+flowchart TB
+  A[asset] --> E{validated edge<br/>in registry ?}:::g
+  E -->|no| CTX[live OI signal = context only<br/>NOT tradeable]:::o
+  E -->|yes| S{live OI extreme<br/>firing now ?}:::g
+  S -->|no| WAIT[wait / abstain until it fires]:::o
+  S -->|yes| ENTER[ACTIONABLE — fade the crowd<br/>fractional-Kelly sized]:::act
+  classDef g fill:#1e1e1b,stroke:#c9f24b,color:#f2efe6;
+  classDef o fill:#161614,stroke:#8b8b80,color:#f2efe6;
+  classDef act fill:#1e1e1b,stroke:#c9f24b,color:#c9f24b;
+`}
+/>
+
+| Perp OI 24h change | Crowd | Fade action |
+|---|---|---|
+| Top quintile (OI spiking) | crowd piling in | **SHORT** |
+| Bottom quintile (OI flushing) | crowd capitulating | **LONG** |
+| Middle | no extreme | no trade |
+
+## Output (shape)
+
+```json
+{
+  "asset": "NEAR",
+  "edge_validated": false,
+  "actionable": false,
+  "live_signal": null,
+  "caveat": "No validated edge for this asset — context only; the firm abstains unless an edge is earned."
+}
+```
+
+## Honest caveats
+
+The method is only worth acting on when an asset has **earned** it. On NEAR it has not: Bitget publishes
+open interest only as a live snapshot, so the OI column is empty in the history and the hypothesis cannot
+be validated (Finding #6). Crucially, **the registry is allowed to be empty** — and it is. This desk is
+**context only** for NEAR, and the firm abstains. If an asset's edge ever clears the gate, it is sized with
+fractional-Kelly and hard risk caps, never bet as a sure thing, and it stays *earned* on every re-test.

@@ -1,0 +1,69 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Build
+dist/
+build/
+
+# Environment
+.env
+.env.local
+*.env
+
+# Live runtime artifacts (regenerable)
+data/live_ticks.jsonl
+data/live_trades.jsonl
+data/live_summary.json
+
+# Agent memory (runtime, regenerable) + replay/test artifacts
+*.db
+data/replay_*
+data/_memtest*
+
+# IDE
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+data/paper_ledger.jsonl
+data/desk_outcomes.jsonl
+
+# regenerable data caches (re-fetched by collector scripts)
+data/*_perp_hourly.csv
+data/btc_5m_binance.csv
+data/btc_basis.csv
+data/btc_orderflow.csv
+data/btc_hyperliquid.csv
+
+data/live_position.json
+
+# local-only — secrets, session transcripts, run artifacts (NEVER commit)
+scripts/*.bat
+*this-session*.txt
+data/_*.log
+data/state/
+data/timesfm_vol_lora/
+data/*_cache.json
+data/campaign_ledger.jsonl
+data/track_record.json
+data/org_run_*.json
+data/llm_tokens_*.json
+
+# Keadaan runtime skrip executor
+data/executor_watch.json
+
+# Tautan dashboard OutLayer (berisi kunci dompet)
+data/outlayer_handoff.txt
+data/llm_result_*.json
+
+# railway upload only
+.pytest_cache/

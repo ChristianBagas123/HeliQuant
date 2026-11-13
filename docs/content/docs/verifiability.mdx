@@ -1,0 +1,49 @@
+---
+title: Verifiability & Honesty
+description: The design constraint that shapes everything — every number is reproducible or it doesn't ship.
+---
+
+Honesty isn't a tagline here; it's the **design constraint**. Most "AI traders" optimize for a
+screenshot. HeliQuant optimizes for a number you can reproduce.
+
+## The rules we hold
+
+<Cards>
+  <Card title="No unproven number ships" description="Every strategy must survive cost-aware out-of-sample testing before it gates any real aggression. A number with no run behind it is deleted, not rounded." />
+  <Card title="We publish failures" description="On NEAR, the edge lab tested funding-fade (−28.5% out-of-sample) and price-momentum (−35.0%) after costs. Neither passed. The validated registry is empty." />
+  <Card title="Decayed edges get demoted" description="The registry is allowed to be empty. When an edge fails fresh data, the loop retires it. We would rather hold nothing than trade a dead edge." />
+  <Card title="Verifiable, not asserted" description="Decisions and desk outputs are hashed and anchored on NEAR. 'Sealed' means you can look it up on NearBlocks." />
+</Cards>
+
+## What "verifiable on NEAR" actually means
+
+- **Identity** — 13 agent tokens (firm + 12 desks, tokens 1–13) in the `core` contract.
+- **Sealed outputs** — each desk output hash written as a validation credential (`record_output`),
+  signed by that desk's own limited key.
+- **Anchored decisions** — a record's SHA-256 written by the executor (an OutLayer custody wallet) as a
+  NEP-297 event, recomputable by anyone from the public record. When the cycle has TEE proofs, the record
+  carries their summary (`tee`).
+- **TEE-signed LLM calls** — each call of a cycle runs on NEAR AI Cloud inside a TEE and returns an ed25519
+  signature over `model:request_hash:response_hash`. Check a cycle with
+  `python agents/scripts/verify_tee.py --url <agent>/tee/<cycle_id>`, or open `/proof` in the web app.
+- **Escrow jobs** — deposit, trade, settle, and payout are contract calls on testnet with a test token.
+
+Honest scope: these are **proof-of-existence hashes**, not capital moving. The trading floor runs at live
+prices on paper or Bitget Demo; no real capital is used. We say so out loud —
+*on the site, inside the product, and in the [findings](/docs/findings).*
+
+## What the TEE proof does not prove
+
+- It proves which model produced which answer from which exact input. It does not prove the market data in
+  that input was right, or that the answer reasons well.
+- The script checks the signature, the attestation nonce, the NVIDIA GPU attestation and that the signer is the
+  attested model's. It does not verify the Intel TDX quote, `report_data`, the compose file, TLS or image
+  provenance.
+- Instances of the same model share one signing key, so a matching signer does not prove the same instance
+  answered.
+- A call that fell back to another provider is listed as unverified.
+
+## Why this is the moat
+
+A magic indicator can be copied. **Rigor that reports its own failures** can't be faked — and it's exactly
+what a counterparty should trust. The discipline *is* the product.

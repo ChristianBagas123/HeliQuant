@@ -1,0 +1,81 @@
+{
+  "network": "testnet",
+  "core": "core.heliquant.testnet",
+  "firm": {
+    "tokenId": "1"
+  },
+  "desks": {
+    "Regime/Technical": {
+      "tokenId": "2",
+      "kind": "Signal",
+      "ml": true,
+      "account": "regime.heliquant.testnet"
+    },
+    "Macro (Allora)": {
+      "tokenId": "3",
+      "kind": "Signal",
+      "ml": false,
+      "account": "macro.heliquant.testnet"
+    },
+    "On-chain/Risk": {
+      "tokenId": "4",
+      "kind": "Risk",
+      "ml": false,
+      "account": "onchain-risk.heliquant.testnet"
+    },
+    "Research": {
+      "tokenId": "5",
+      "kind": "Research",
+      "ml": false,
+      "account": "research.heliquant.testnet"
+    },
+    "Smart-Money Flow": {
+      "tokenId": "6",
+      "kind": "Signal",
+      "ml": false,
+      "account": "smart-money.heliquant.testnet"
+    },
+    "Smart-Social": {
+      "tokenId": "7",
+      "kind": "Research",
+      "ml": false,
+      "account": "smart-social.heliquant.testnet"
+    },
+    "OI-Contrarian": {
+      "tokenId": "8",
+      "kind": "Signal",
+      "ml": false,
+      "account": "oi-contrarian.heliquant.testnet"
+    },
+    "flow-intel": {
+      "tokenId": "9",
+      "kind": "Signal",
+      "ml": false,
+      "account": "flow-intel.heliquant.testnet"
+    },
+    "whale": {
+      "tokenId": "10",
+      "kind": "Signal",
+      "ml": false,
+      "account": "whale.heliquant.testnet"
+    },
+    "Carry": {
+      "tokenId": "11",
+      "kind": "Signal",
+      "ml": false,
+      "account": "carry.heliquant.testnet"
+    },
+    "NEAR Fundamentals": {
+      "tokenId": "12",
+      "kind": "Research",
+      "ml": false,
+      "account": "near-fundamentals.heliquant.testnet"
+    },
+    "TimesFM Vol/Risk": {
+      "tokenId": "13",
+      "kind": "Risk",
+      "ml": false,
+      "account": "timesfm.heliquant.testnet"
+    }
+  }
+}

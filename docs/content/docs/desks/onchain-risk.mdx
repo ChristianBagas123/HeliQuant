@@ -1,0 +1,61 @@
+---
+title: On-chain / Risk desk
+description: Whale USD-flow on Rhea pools vs price (divergence), watchlist health, and an internal NEAR token-safety screen.
+---
+
+**Agent token 4.** This desk answers two questions: *is the token safe to touch?* and *what is
+smart money doing relative to price?* It fuses a security screen with an on-chain flow read and looks for
+**divergence** — the high-value angle.
+
+## What it reads
+
+`firm/organization.py · tool_onchain_risk()`:
+
+- **NEAR token security** (`wrap.near` for NEAR) — an **internal on-chain check**, not a scam database: holder
+  concentration, pool liquidity (information only), severity, risk score, a `trade_safe` flag. The honeypot field
+  is reported as `unverified`. Assets with no NEAR contract (BTC, ETH, XRP, SOL, HYPE, SUI) are `not_applicable`.
+- **Whale watchlist health** — what fraction of the tracked wallets still qualify, how stale the data is.
+- **Whale USD-flow** — aggregate smart-money flow from GeckoTerminal **Rhea** wNEAR pools (5 pools, top by
+  24h volume, 300 trades per pool) → a `net_bias` (accumulating / distributing / neutral). Direction comes from the
+  token pair: in a USDC / wNEAR pool a trade *from* `wrap.near` is a **sale** of NEAR.
+- **Divergence vs price** — compares `net_bias` against the recent 24-bar return.
+
+## The divergence logic
+
+<Mermaid
+  caption="Smart-money flow × price → the divergence read"
+  chart={`
+flowchart TB
+  GP[NEAR token screen · wrap.near<br/>holders · risk score]:::s --> RISK[risk gate]:::o
+  WL[Watchlist health<br/>qualify% · stale?]:::s --> RISK
+  WF[Whale USD-flow<br/>GeckoTerminal Rhea · 5 pools]:::s --> NB{net_bias}:::g
+  PR[Price 24-bar return]:::s --> DV
+  NB --> DV{{divergence vs price}}:::g
+  DV -->|buying weakness| BULL[BULLISH divergence]:::o
+  DV -->|selling strength| BEAR[BEARISH divergence]:::o
+  DV -->|aligned| CONF[confirms the trend]:::o
+  classDef s fill:#161614,stroke:#8b8b80,color:#f2efe6;
+  classDef g fill:#1e1e1b,stroke:#c9f24b,color:#f2efe6;
+  classDef o fill:#161614,stroke:#8b8b80,color:#f2efe6;
+`}
+/>
+
+## Output (shape)
+
+```json
+{
+  "token_security": { "token": "wrap.near", "applicable": true, "severity": "low", "honeypot": "unverified", "trade_safe": true },
+  "whale_health": { "qualify_pct": 80, "losers": 1, "data_age_hours": 6, "stale": false },
+  "whale_flow": { "net_bias": "accumulating" },
+  "price_recent_24bar_pct": -2.1,
+  "whale_divergence_vs_price": "BULLISH divergence (whales buying weakness)"
+}
+```
+
+## Honest caveats
+
+The whale USD-flow aggregate is **clean but lagged and unvalidated** — it's forward-logged (via
+`scripts/30`) to *test* whether it predicts, but it has **not** earned an edge. On real data captured
+2026-11-09 the cohort read **neutral**. So it's used as **positioning / divergence context**, not a timing
+trigger. The top 3 traders account for about half of the sampled volume. The security screen is a hard gate that
+**fails closed**: an unsafe token — or a screen that cannot run — turns an ENTER into an ABSTAIN regardless of flow.

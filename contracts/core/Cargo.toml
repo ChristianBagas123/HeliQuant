@@ -1,0 +1,22 @@
+[package]
+name = "heliquant-core"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[features]
+# Hanya untuk build tes sandbox. Jangan pernah di-deploy.
+# test-hooks: skala gas callback dan callback yang sengaja dikurangi gasnya.
+# test-layout-v2: tambah satu field di akhir state, untuk tes upgrade lewat `migrate`.
+test-hooks = []
+test-layout-v2 = []
+
+[dependencies]
+near-sdk = "=5.30.1"
+near-contract-standards = "=5.30.1"
+
+[dev-dependencies]
+near-sdk = { version = "=5.30.1", features = ["unit-testing"] }

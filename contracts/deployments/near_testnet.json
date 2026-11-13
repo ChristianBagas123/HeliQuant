@@ -1,0 +1,34 @@
+{
+  "network": "testnet",
+  "rpc": "https://test.rpc.fastnear.com",
+  "parent": "heliquant.testnet",
+  "contracts": {
+    "core": "core.heliquant.testnet",
+    "musdc": "musdc.heliquant.testnet",
+    "allora": "allora.heliquant.testnet"
+  },
+  "tokens": {
+    "principal": "musdc.heliquant.testnet",
+    "base": "wrap.testnet"
+  },
+  "dex": {
+    "id": "ref-finance-101.testnet",
+    "pool_id": 2926
+  },
+  "accounts": {
+    "executor": "3c3f177f15b03d76320aee0eed025c0fa4af1ac03d4c5f6cf8d69c3d8f21104e",
+    "executor_mode": "custody",
+    "executor_legacy_key_account": "executor.heliquant.testnet",
+    "relayer": "relayer.heliquant.testnet"
+  },
+  "firm_token_id": "1",
+  "allora_topics": [
+    14
+  ],
+  "wasm_sha256": {
+    "core": "04510597152e1b96e1d2d676706c66d404c08fcfc655d05f39bf9350a72b7177",
+    "musdc": "8b280c6d20b886e339b1b2b0fad04f230e7305cfe1ce2cb61883952fe80347fb",
+    "allora": "5dd6563c2c3901aa72ef5b87e1be9b846d63fe113ee849362c47461f9e7aa866"
+  },
+  "deployed_at": "2026-11-09T07:19:42Z"
+}

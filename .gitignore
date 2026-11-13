@@ -1,0 +1,56 @@
+# Secrets. Never commit real keys.
+.env
+.env.*
+*.env
+!.env.example
+api key*.txt
+*.pem
+*.key
+*.credentials.json
+
+# NEAR credentials
+.near-credentials/
+near-credentials/
+
+# Build output for spike and Rust workspaces
+target/
+
+# Local tooling
+/.claude/
+
+# Tests stay local; they are not part of the public repository.
+/agents/tests/
+/agents/scripts/test_*.py
+/frontend/tests/
+/contracts/tests/
+/contracts/mock-dex/
+/contracts/core/src/tests.rs
+
+# Frontend design notes, static assets and agent instructions stay local.
+/frontend/docs/
+/frontend/public/
+/frontend/AGENTS.md
+/frontend/CLAUDE.md
+
+# Data and models of assets outside the traded basket (written by research scripts).
+/agents/data/apt_*
+/agents/data/arb_*
+/agents/data/ena_*
+/agents/data/sei_*
+/agents/data/tia_*
+/agents/models/metadata.json
+
+# Python bytecode
+__pycache__/
+*.pyc
+
+# Local helpers, backups and one-off probe/diagnostic scripts stay local.
+/contracts/scripts/wsl.sh
+/agents/data/validated_edges.backup.json
+/agents/scripts/_probe_*.py
+/agents/scripts/_data_audit.py
+/agents/scripts/_diag_classifier.py
+/agents/scripts/_oos_vs_buyhold.py
+/agents/scripts/_regime_scan.py
+/agents/scripts/finetune_timesfm_vol_lora.py
+/agents/scripts/75_btc_ml_rigorous.py

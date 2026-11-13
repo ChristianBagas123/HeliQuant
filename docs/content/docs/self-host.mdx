@@ -1,0 +1,89 @@
+---
+title: Run Your Own
+description: HeliQuant is open and self-hostable — bring your own keys and your own NEAR account, your firm never touches ours.
+---
+
+The backend is **credential-modular**: every key is read from `.env`, and the LLM layer is a BYO
+multi-provider abstraction. You can run the whole firm on your own infrastructure with your own keys and
+your own NEAR testnet account — they never touch ours.
+
+## The model
+
+- **View the live firm** — the public dApp ([heliquant-near.vercel.app](https://heliquant-near.vercel.app))
+  shows HeliQuant's own always-on instance: the trading floor, learning, agents, ledger — live.
+- **Run a local engine** — `agents-LocalReady/` runs the firm on your machine with Docker (or a plain venv).
+  Expose it with a tunnel, open `/onboarding` on the dApp, connect the wallet of your `HQ_OWNER_ACCOUNT` and
+  sign once (NEP-413). Your keys go straight from the form to your engine's local SQLite. See below.
+- **Run your own full stack** — clone the repo, create a testnet parent account, deploy your own contracts, set
+  your `.env`, deploy your own Railway service + Supabase. Your firm, your keys, your chain accounts.
+
+## Quick start
+
+<Steps>
+<Step>
+### Clone + install
+```bash
+git clone https://github.com/ChristianBagas123/HeliQuant
+cd HeliQuant/agents && python -m venv .venv && .venv/Scripts/pip install -r requirements.txt
+```
+</Step>
+<Step>
+### Deploy the contracts
+Create a testnet account you own, set `NEAR_PARENT_ACCOUNT` and its key, then run
+`contracts/scripts/deploy-testnet.sh` from WSL. It builds the Wasm, creates the sub-accounts, deploys
+`core`, `musdc` and `allora`, registers the firm and 12 desks, adds the **limited** keys and writes
+`contracts/deployments/near_testnet.json`. Private keys are filtered from all output.
+</Step>
+<Step>
+### Configure `.env`
+Bring your own: an LLM provider key (free Groq works), NearBlocks, Nansen and Elfa (optional; Allora is read
+keyless from its chain), a
+Supabase project (URL + service key), the limited NEAR keys the deploy step printed, a **Bitget Demo** API
+key (futures execution), and **optional `TIMESFM_URL` / `TIMESFM_TOKEN`** (the TimesFM vol Space — falls
+back to EWMA if unset). The firm runs clean on **free Groq** — no paid brain required.
+</Step>
+<Step>
+### Deploy
+Push to a **Railway** service in one region (for example `iad`), fill its variables with
+`agents/scripts/railway_set_env.py`, and point an uptime monitor at `/run-cycle`. The cloud self-refreshes
+its own market data each cycle. The Allora relayer is a second, cron-type service (`relayer/README.md`).
+</Step>
+</Steps>
+
+## Local engine (agents-LocalReady)
+
+<Steps>
+<Step>
+### Start it
+`git clone https://github.com/ChristianBagas123/HeliQuant`, then `cd HeliQuant/agents-LocalReady && cp .env.example .env` and set
+`HQ_OWNER_ACCOUNT=<you>.testnet` (`HQ_REPO_URL` already points to this repository), then `docker compose up -d`. Without Docker:
+`./run.sh` (macOS/Linux) or `./run.ps1` (Windows). `http://localhost:8000/health` answers `ok`.
+</Step>
+<Step>
+### Tunnel it
+`ngrok http 8000` and copy the `https://…` URL.
+</Step>
+<Step>
+### Register your keys
+On the dApp's `/onboarding`: paste the URL, **Connect**, connect the wallet of `HQ_OWNER_ACCOUNT`, fill your
+keys, **Register** and sign the message. The engine accepts it only if the signature is valid, the nonce is
+fresh and unused, and the key is a full-access key of the owner. The dashboard then reads your engine.
+</Step>
+</Steps>
+
+`HQ_OWNER_ACCOUNT` empty → `/register` answers `503` and nobody can write keys through the web; the engine
+itself keeps running on the keys in its `.env`.
+
+## Honest about scope
+
+This is **self-host**, not in-app multi-tenant. We deliberately do **not** custody other people's API
+keys in a shared backend (that would be a security liability). Your keys live in *your* deployment. The
+owner key of a NEAR account never goes to Railway or Vercel; only limited function-call keys do.
+
+## Layout
+
+- `agents/` — the firm (Python: desks, PM, campaign, edge lab, on-chain recorder)
+- `contracts/` — Rust contracts for NEAR testnet (`core`, `musdc`, `allora`) and the deploy script
+- `relayer/` — the Allora → NEAR relayer (Railway cron)
+- `frontend/` — the Night Garage dApp (Next.js, `near-connect-hooks`)
+- `docs/` — this site

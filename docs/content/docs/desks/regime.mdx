@@ -1,0 +1,100 @@
+---
+title: Regime / Technical desk
+description: The ML desk — an XGBoost regime classifier (78.9% on NEAR's test set vs 76.1% persistence) used as a risk read, not a price oracle.
+---
+
+**Agent token 2.** This is **the ML desk** — and it's where HeliQuant's honesty about machine
+learning lives. It runs the model that *earned* its place (a regime classifier) and explicitly does
+**not** run the one that didn't (a directional predictor).
+
+## In / Process / Out
+
+`firm/organization.py · tool_regime()` over each asset's `data/{ticker}_features.csv`:
+
+- **In:** the latest feature row (ADX, `ema_slope_5`, `volatility_10`) + ADX/vol quantile thresholds.
+- **Process:** `scripts/multi_asset.detect_current` maps the row to a regime with **three
+  deterministic rules** — high `volatility_10` → `High_Volatility`; else high `adx` → `Trending_Up` /
+  `Trending_Down` (by `ema_slope_5` sign); else `Ranging`. A dynamic R:R (2.0–3.0) is scaled from ADX
+  strength.
+- **Out:** `{current_regime, adx, trending_threshold, trend_following_applicable_now,
+  recommended_dynamic_rr, regime_classifier_oos_accuracy, oos_validated_trading_edge, status}`.
+
+### The live label is a rule-based proxy — the XGBoost is the *backtest* engine
+
+This is the honest nuance. The **live** regime label that feeds the PM each cycle is the **rule-based
+`detect_current` proxy** above — *not* a fresh XGBoost inference. The **XGBoost classifier** is trained and
+scored in the **backtest replay path** (`scripts/multi_asset.py` — `model.predict`;
+`replay()`); it is not called on the live tick.
+
+The accuracy string comes from `models/regime_metadata.json`, written by `scripts/05_train_regime_classifier.py`
+(NEAR, 1-hour bars from a Binance data mirror, ~365 days, 4-hour forward label): **78.9%** on the held-out test
+split (n = 1,113) against **76.1%** for persistence — **+2.8 points** — and **68.0% ± 5.2%** under
+cross-validation. The same string is emitted for every asset, so treat it as a property of the *method* on NEAR,
+not a per-asset live accuracy. And — as everywhere on this site — **accurate regime ≠ trading profit**:
+`oos_validated_trading_edge` is `false` for every asset today.
+
+## Pipeline
+
+<Mermaid
+  caption="Features to a rule-based regime label plus trend strength to a risk read (never a raw price call)"
+  chart={`
+flowchart TB
+  C[features CSV · ADX · ema_slope · volatility]:::s --> X[["detect_current — rule-based proxy<br/>vol / ADX / slope thresholds"]]:::ml
+  C --> ADX[ADX trend strength<br/>vs dynamic threshold]:::s
+  X --> R{regime in TREND ?}:::g
+  ADX --> R
+  R -->|yes| RR[recommend dynamic R:R]:::o
+  R -->|no| NA[trend-following N/A to context]:::o
+  X --> V{OOS-validated edge<br/>for this asset ?}:::g
+  V -->|registry hit| EN[edge applies]:::o
+  V -->|empty| AB[abstain unless an edge is earned]:::o
+  BT[(XGBoost classifier<br/>trained + scored in backtest replay only<br/>78.9% test vs 76.1% persistence · NEAR)]:::bt -.->|pedigree, not the live call| X
+  classDef s fill:#161614,stroke:#8b8b80,color:#f2efe6;
+  classDef ml fill:#1e1e1b,stroke:#c9f24b,color:#c9f24b;
+  classDef bt fill:#161614,stroke:#8b8b80,color:#8b8b80;
+  classDef g fill:#1e1e1b,stroke:#c9f24b,color:#f2efe6;
+  classDef o fill:#161614,stroke:#8b8b80,color:#f2efe6;
+`}
+/>
+
+## Regime → action
+
+<Mermaid
+  caption="The label produces a risk read — accurate regime is not trading profit"
+  chart={`
+stateDiagram-v2
+  [*] --> Classify: detect_current rules on fresh features
+  Classify --> Trending: regime in TREND
+  Classify --> Ranging: otherwise
+  Trending --> RiskRead: dynamic R:R sizing
+  Ranging --> RiskRead: trend-following N/A
+  RiskRead --> [*]: feed PM as a risk read, not a price call
+`}
+/>
+
+## Output (shape)
+
+```json
+{
+  "current_regime": "…",
+  "adx": 18.4,
+  "trending_threshold": 20.0,
+  "trend_following_applicable_now": false,
+  "recommended_dynamic_rr": 2.2,
+  "regime_classifier_oos_accuracy": "78.9% on the held-out test split vs 76.1% persistence baseline (n=1113, NEAR/USD)",
+  "oos_validated_trading_edge": false,
+  "status": "NO validated trend-following edge — abstain unless a genuine edge applies"
+}
+```
+
+## The honest ML story
+
+A **directional** ML (XGBoost predicting BUY/SELL) is not used: every hypothesis, ML or not, must clear the
+same cost-aware out-of-sample gate (Finding #7), and none has for NEAR (Finding #5). Trend-following and
+price-momentum on NEAR were negative out-of-sample after costs (momentum −35.04%).
+
+What *is* measurably useful is the **regime classifier** (78.9% vs 76.1% persistence on NEAR). But an accurate regime
+label is **not** a trading profit — so it's used as a **capital allocator / risk read** feeding the PM,
+never as a price oracle, and the live label is the cheap, responsive `detect_current` proxy rather than a
+per-tick model inference. The good model earns its place; the disproven one stays out. That distinction is
+the differentiator.

@@ -1,0 +1,95 @@
+---
+title: On-chain (NEAR)
+description: 13 agent identities (firm + 12 desks), every desk output sealed, every decision anchored — verifiable on NEAR testnet, not claimed.
+---
+
+HeliQuant isn't "on-chain" as a slide. The firm has a real, verifiable footprint on **NEAR testnet**: a
+registered identity per agent, reputation that accrues from settled jobs, sealed desk outputs, anchored
+decisions, and an escrow vault that runs hire → trade → settle.
+
+> Parent account: `heliquant.testnet` · explorer: [testnet.nearblocks.io](https://testnet.nearblocks.io)
+
+## The deployed contracts
+
+Three Rust contracts (near-sdk), all under the parent account.
+
+| Contract | Account | Role |
+|---|---|---|
+| `core` | `core.heliquant.testnet` | identity (NEP-171, soulbound), reputation, validation credentials, job escrow, vault, anchor |
+| `musdc` | `musdc.heliquant.testnet` | NEP-141 test stablecoin (mUSDC) with a public faucet |
+| `allora` | `allora.heliquant.testnet` | stores Allora predictions pushed by the relayer (topic 14) |
+
+Trades run through a **Rhea (Ref Finance) testnet pool** — `ref-finance-101.testnet`, pool `2926`
+(mUSDC / wNEAR). The executor is an **OutLayer Agent Custody wallet** (a 64-hex implicit account, see
+[the executor](#the-executor-outlayer-custody)); the relayer holds a limited key as `relayer.heliquant.testnet`.
+The exact deployed Wasm hashes are in `contracts/deployments/near_testnet.json`.
+
+## 13 agents registered
+
+The firm (token `1`) and **all 12 desks** (tokens `2`–`13`) are registered identities in `core`. Each desk
+also has its own sub-account, e.g. `regime.heliquant.testnet`. Identity tokens are **soulbound** — they
+cannot be transferred.
+
+| tokenId | Agent | tokenId | Agent |
+|---|---|---|---|
+| **1** | HeliQuant (firm) | 8 | OI-Contrarian |
+| 2 | Regime/Technical *(the ML — XGBoost)* | 9 | flow-intel |
+| 3 | Macro (Allora) | 10 | whale |
+| 4 | On-chain/Risk | 11 | Carry |
+| 5 | Research | 12 | NEAR Fundamentals |
+| 6 | Smart-Money Flow | 13 | TimesFM Vol/Risk |
+| 7 | Smart-Social | | |
+
+## Four on-chain primitives
+
+<Cards>
+  <Card title="Identity" description="register_agent mints a soulbound NFT per desk. The roster of who is in the firm is a contract view, not a claim." />
+  <Card title="Sealed outputs" description="Each org cycle, a desk writes its output hash with record_output as a credential against its token. A desk can only call that one method, with no deposit." />
+  <Card title="Anchored decisions" description="anchor writes a SHA-256 record hash as a NEP-297 event. Only the executor account may call it. Verify any row on NearBlocks." />
+  <Card title="Escrow vault" description="A client deposits mUSDC with ft_transfer_call. Only the executor can trade (through the configured DEX). Once the job matures anyone can call settle_job; the payout goes to the client, or becomes claimable with claim_payout if the transfer failed." />
+</Cards>
+
+## Why keys are limited
+
+Agents never hold a full-access key. Each key is a NEAR **function-call key** restricted by the protocol
+to one contract and a fixed list of methods, with a gas allowance:
+
+| Key | Allowed methods on its contract |
+|---|---|
+| Desk (12) | `record_output` on `core` |
+| Relayer | `submit_inference` on `allora` |
+
+Calling any other method, calling another contract, sending NEAR, or attaching a deposit is rejected by the
+protocol itself. The owner's full-access key never leaves the owner's machine. `/health/onchain` shows
+each key's remaining allowance and failure count.
+
+## The executor: OutLayer custody
+
+The executor account (the only account `core` accepts `trade`, `recover_job`, `reconcile_job` and `anchor`
+from) is a wallet in **OutLayer Agent Custody**. The agent holds only an API key; the signing key stays in
+OutLayer's TEE. The wallet policy allows only `call` to `core.heliquant.testnet`, at most 1 NEAR per
+transaction, and the owner can freeze the wallet from the OutLayer dashboard. `/health/onchain` shows the
+executor with `mode: custody`, its balance and policy state.
+
+- OutLayer Agent Custody is alpha. The address whitelist is not proven to apply to `call` receivers; the main
+  restriction is the `core` contract itself.
+- The per-transaction multisig approval is switched off, otherwise every transaction would wait for the owner and
+  the agent could not run unattended.
+- Rollback to a restricted function-call key (`EXECUTOR_MODE=key`) is documented in `agents/DEPLOY.md`.
+
+## NEAR Agent Market
+
+The firm is listed on [NEAR Agent Market](https://heliquant.market.near.ai) as `@heliquant`, price $0. A hire
+carries one asset in its brief (for example `Analyze NEAR`). The worker runs one analysis, anchors the decision
+with `core.anchor` (reference `market:<assignment>`) and submits a Markdown deliverable with the decision, the
+trade ticket, every desk's vote and the TEE proofs. No user funds move through a market job.
+
+## Honest scope
+
+- **Decisions and outputs are sealed** (hash proof-of-existence) — verifiable and tamper-proof. The
+  paper trading floor itself is **off-chain**: positions are opened on **Bitget Demo** (or paper) and the
+  chain records the *decisions*, not every fill.
+- **The vault runs on testnet with a test token.** mUSDC is free from the faucet and has no value.
+- **Reputation accrues forward.** It reads low until jobs settle. Nothing is pre-seeded.
+- **The smoke-test anchor is not a trade.** The first `anchor` call on testnet (made by the executor key
+  during deployment, before the custody wallet took over) is labeled as a deploy smoke test everywhere it appears.

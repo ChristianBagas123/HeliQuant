@@ -1,0 +1,54 @@
+---
+title: whale desk
+description: Per-asset whale tracker — discovers Hyperliquid's top traders and reads their live positions.
+---
+
+**Agent token 10.** The whale desk watches what the **best traders alive** are actually doing — not
+a static watchlist, but a **dynamic, per-asset** discovery off the Hyperliquid leaderboard (a public pool
+of ~38k traders). It's cloud-native: Hyperliquid is reachable from Railway, so this runs live in
+production.
+
+## What it reads
+
+`firm/hl_whales.py`:
+
+- **Leaderboard discovery** — pulls the top traders by realized PnL from Hyperliquid's public leaderboard.
+- **Live positions** — for the **specific asset being traded**, reads those top traders' current position
+  side, size, and ROE.
+- **Aggregate stance** — turns the cohort's positioning into a long / short / mixed whale stance.
+
+## Discovery flow
+
+<Mermaid
+  caption="Discover the best traders, then read their live positions in the traded asset"
+  chart={`
+sequenceDiagram
+  autonumber
+  participant DK as whale desk
+  participant LB as HL leaderboard
+  participant HL as Hyperliquid API
+  DK->>LB: fetch top traders (38k pool · public)
+  LB-->>DK: top-N by realized PnL
+  loop each top trader
+    DK->>HL: read live position + ROE in the traded asset
+    HL-->>DK: side + size + ROE
+  end
+  DK->>DK: aggregate → whale stance (long / short / mixed)
+  Note over DK: per-asset — the asset of the cycle
+`}
+/>
+
+## Why dynamic beats a watchlist
+
+A hard-coded whale list goes stale — wallets blow up, rotate, or get dethroned. By re-pulling the
+leaderboard (at most every 12 hours, cached in Supabase `hq_state`), the desk tracks who is *winning now*, and it reads positions in the
+exact asset under consideration rather than a generic "smart money" blob.
+
+## Honest caveats
+
+- The `/whales` page and endpoint show BTC, ETH, SOL, HYPE and SUI only. The org still asks this desk
+  about the cycle's asset, NEAR included; when none of the top traders holds that asset, the read is empty.
+  NEAR's Rhea DEX flow is covered by the [On-chain/Risk desk](/docs/desks/onchain-risk).
+- Following whales is a **positioning context**, not a guarantee — even top traders are wrong, and there's
+  latency between their fill and our read. It folds into `desk_performance` and earns its weight like any
+  other desk.

@@ -1,0 +1,13 @@
+[workspace]
+resolver = "2"
+members = ["core", "musdc", "allora"]
+# Test-only crates (mock DEX, sandbox tests) are standalone workspaces kept outside the public repository.
+exclude = ["mock-dex", "tests"]
+
+[profile.release]
+codegen-units = 1
+opt-level = "z"
+lto = true
+debug = false
+panic = "abort"
+overflow-checks = true

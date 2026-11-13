@@ -1,0 +1,69 @@
+---
+title: Macro desk (Allora)
+description: Decentralised-AI macro — Allora's on-chain 8h price inference for BTC and ETH.
+---
+
+**Agent token 3.** The macro desk doesn't guess at the Fed — it reads a **decentralised-AI oracle**.
+Allora is a network of models that publishes price inferences on-chain; HeliQuant consumes its 8-hour
+BTC and ETH predictions straight from the Allora chain through its public LCD endpoint (`firm/allora_lcd.py`,
+wrapped by `firm/allora_client.py`) — free, no API key. The same BTC topic is also relayed on-chain to the
+`allora` contract on NEAR as a public record (see below).
+
+## What it reads
+
+`firm/organization.py · tool_macro()` → `firm/allora_client.py`:
+
+- **BTC** — Allora topic **14**, 8h price prediction.
+- **ETH** — Allora topic **9**, 8h price prediction.
+- Each inference is the network's `combined_value` from `latest_network_inferences`, timestamped with the time
+  of the Allora block that holds it. With the current spot price (CoinGecko) it yields `spot_usd`,
+  `predicted_8h_usd`, `predicted_return_pct`, and a `direction` (bullish / bearish / neutral).
+- **Crypto-beta context** — a BTC read is macro context for the other assets in the basket, including NEAR.
+
+## How a prediction is fetched
+
+<Mermaid
+  caption="Allora oracle fetch — with a plausibility filter and a regime fallback"
+  chart={`
+sequenceDiagram
+  autonumber
+  participant DK as Macro desk
+  participant AC as Allora client (LCD)
+  participant AL as Allora chain (LCD)
+  participant FB as BTC-regime fallback
+  DK->>AC: fetch BTC topic 14 · ETH topic 9
+  AC->>AL: latest_network_inferences (topic) + block time
+  AL-->>AC: combined_value (predicted 8h price)
+  AC->>AC: spot_usd from CoinGecko
+  AC-->>DK: signal
+  alt implausible (≤ 0 or |return| > 50%)
+    DK->>FB: use BTC-regime proxy
+    FB-->>DK: regime + 24-bar return
+  else valid
+    DK->>DK: direction = bull / bear / neutral
+  end
+  Note over DK: BTC read = macro context for the whole basket
+`}
+/>
+
+## Output (shape)
+
+```json
+{
+  "source": "Allora decentralised-AI 8h price prediction (BTC topic 14, ETH topic 9)",
+  "btc": { "spot_usd": 0, "predicted_8h_usd": 0, "predicted_return_pct": 0.0, "direction": "neutral" },
+  "eth": { "...": "..." },
+  "note": "Real decentralised-AI signal from Allora."
+}
+```
+
+## Honest caveats
+
+- A bad/empty inference (e.g. a topic returns 0, or an implausible >50% move) is **rejected** and the
+  desk falls back to a transparent BTC-regime proxy — it never forwards garbage as signal.
+- Allora gives a **direction view at an 8h horizon**, treated as macro **context**, not a standalone
+  trade trigger. The PM still gates everything behind R:R ≥ 2:1.
+- The desk reads the Allora chain directly (LCD, no key). Separately, a **relayer** (a Railway cron, every
+  30 minutes) copies BTC topic 14 into the `allora.heliquant.testnet` contract as a public record. The contract
+  rejects data older than 1,800 s; if the Allora block time is older, the relayer submits the current time and
+  prints a warning (Finding #16).

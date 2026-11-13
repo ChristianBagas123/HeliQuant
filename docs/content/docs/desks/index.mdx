@@ -1,0 +1,146 @@
+---
+title: The Desks
+description: Ten specialist desks (+ flow-intel & whale) — twelve analyst voices, each a real data source. One is the ML.
+---
+
+Each desk runs a **real tool** over fresh data and returns a stance + confidence (one `Qwen/Qwen3.8-27B` call per
+desk on NEAR AI Cloud). The firm synthesizes **ten specialist desks** plus two
+self-learning inputs — **flow-intel** and **whale** — for **twelve analyst voices** into one PM decision.
+**Every desk has its own deep-dive page** — linked in the table below.
+
+> **All on-chain.** The firm (token 1) and **all 12 desks** (tokens 2–13) are registered agent identities in
+> the `core` contract on NEAR testnet ([see On-chain](/docs/on-chain)), so every voice the PM hears has an
+> on-chain identity.
+
+| # | Desk | tokenId | What it reads |
+|---|---|---|---|
+| 1 | [**Regime/Technical** *(the ML)*](/docs/desks/regime) | 2 | rule-based regime label live (XGBoost is the backtest engine: 78.9% vs 76.1% persistence on NEAR) + trend strength + dynamic R:R |
+| 2 | [**Macro (Allora)**](/docs/desks/macro) | 3 | Allora decentralised-AI BTC/ETH 8h price prediction |
+| 3 | [**On-chain/Risk**](/docs/desks/onchain-risk) | 4 | Rhea whale flow + watchlist health + internal NEAR token safety screen |
+| 4 | [**Research**](/docs/desks/research) | 5 | Fear & Greed + global macro via free public APIs |
+| 5 | [**Smart-Money Flow**](/docs/desks/smart-money) | 6 | perp positioning (OI / funding / long-short) + Nansen netflow |
+| 6 | [**Smart-Social**](/docs/desks/smart-social) | 7 | Elfa narrative / mindshare (smart accounts, not retail) |
+| 7 | [**OI-Contrarian**](/docs/desks/oi-contrarian) | 8 | fade perp open-interest extremes — context-only until an asset earns the edge |
+| 8 | [**Carry**](/docs/desks/carry) | 11 | delta-neutral funding-carry yield (market-neutral, advisory) |
+| 9 | [**NEAR Fundamentals**](/docs/desks/near-fundamentals) | 12 | DeFiLlama NEAR TVL / fees / staking → ecosystem risk-on/off |
+| 10 | [**TimesFM Vol/Risk**](/docs/desks/timesfm) | 13 | next-day realized-vol forecast (TimesFM 2.5 when configured, EWMA fallback) → risk-off stance, ticket vol-sizing, regime-break alarm |
+| + | [**flow-intel**](/docs/desks/flow-intel) | 9 | self-learning flow-signal validation (OI / funding / order-flow / momentum) |
+| + | [**whale**](/docs/desks/whale) | 10 | Hyperliquid per-asset whale stance tracker |
+
+## How the desks divide the problem
+
+Twelve voices, three jobs: **predict** a pattern, **follow** informed actors, or supply **context / risk**.
+The firm tilts which family leads based on each asset's measured character (see below).
+
+<Mermaid
+  caption="Desk taxonomy — prediction vs flow vs context/risk"
+  chart={`
+mindmap
+  root((HeliQuant · 12 voices))
+    Prediction
+      Regime/Technical — ML regime classifier
+      OI-Contrarian — fades OI extremes
+    Flow / informed-actor
+      Smart-Money Flow
+      On-chain/Risk
+      whale — Hyperliquid
+      flow-intel — self-learning
+    Context / risk
+      Macro — Allora oracle
+      Research — public APIs
+      Smart-Social — Elfa
+      Carry — funding yield
+      NEAR Fundamentals — DeFiLlama
+      TimesFM — vol/risk
+`}
+/>
+
+## How they collaborate
+
+The PM does **not** average the desks. The nine directional voices (all but Carry, NEAR Fundamentals and
+TimesFM) each earn a **reliability weight** from their own track
+record; the PM ranks them, tags TRUSTED / DISCOUNT, runs a bull-vs-bear debate over the outputs, and only
+then decides — behind a hard R:R gate.
+
+<Mermaid
+  wide
+  caption="Collaboration — stances are weighted by learned reliability, then synthesized"
+  chart={`
+flowchart LR
+  subgraph DK["12 analyst voices"]
+    direction TB
+    A1[Regime · ML]:::d
+    A2[OI-Contrarian]:::d
+    A3[Smart-Money]:::d
+    A4[TimesFM · vol/risk]:::d
+    A5[…8 more]:::d
+  end
+  W{{"desk_performance<br/>weight 0.6–1.4<br/>(≥15 samples · neutral until proven)"}}:::w
+  RANK[["rank → TRUSTED / DISCOUNT"]]:::r
+  DEB{{"bull vs bear debate"}}:::deb
+  PM[["PM synthesis + R:R ≥ 2:1 gate"]]:::pm
+  DEC[/"ENTER | ABSTAIN"/]:::o
+  DK --> W --> RANK --> DEB --> PM --> DEC
+  classDef d fill:#161614,stroke:#8b8b80,color:#f2efe6;
+  classDef w fill:#1e1e1b,stroke:#c9f24b,color:#f2efe6;
+  classDef r fill:#161614,stroke:#c9f24b,color:#f2efe6;
+  classDef deb fill:#1e1e1b,stroke:#c9f24b,color:#f2efe6;
+  classDef pm fill:#1e1e1b,stroke:#c9f24b,color:#c9f24b;
+  classDef o fill:#161614,stroke:#8b8b80,color:#f2efe6;
+`}
+/>
+
+## Which desks lead depends on the asset
+
+`asset_efficiency.py` profiles each asset **fresh** every cycle (volatility + return-autocorrelation). A
+**predictable** asset (autocorrelation ≥ 0.10, or a validated edge) boosts the **prediction** desks
+(Regime, OI-Contrarian); an **efficient** asset (autocorrelation < 0.05, no exploitable pattern) boosts
+the **flow** desks instead. On the data in this repository NEAR, BTC, ETH, SOL, HYPE and SUI all score
+below 0.05 (efficient) and XRP reads neutral, so flow desks lead.
+
+<Mermaid
+  caption="Schematic — assets currently cluster EFFICIENT, so flow desks lead (illustrative positions, not exact metrics)"
+  chart={`
+quadrantChart
+  title Asset character drives the desk tilt
+  x-axis "Efficient — follow flow" --> "Predictable — has pattern"
+  y-axis "Calm" --> "Volatile"
+  quadrant-1 Prediction desks lead
+  quadrant-2 Flow desks · size down
+  quadrant-3 Flow desks lead
+  quadrant-4 Prediction desks · steady
+  "NEAR": [0.34, 0.60]
+  "BTC": [0.30, 0.40]
+  "ETH": [0.31, 0.46]
+  "SOL": [0.33, 0.58]
+  "HYPE": [0.36, 0.80]
+`}
+/>
+
+## The ML is the Regime desk
+
+A directional ML (XGBoost BUY/SELL) is **not** used: it would have to clear the same cost-aware gate as
+every other hypothesis (Finding #7). The ML that *does* run is the **regime classifier**
+(78.9% vs 76.1% persistence on NEAR, in **backtest**) inside the [Regime/Technical desk](/docs/desks/regime), used as a
+**capital allocator / risk read**, not a price predictor. Live, the desk emits a cheap **rule-based regime
+proxy** (`detect_current`); the XGBoost model is the backtest engine that earns the classifier its pedigree.
+Honest ML: the good model earns its place; the disproven one stays out.
+
+## Risk & context desks
+
+- **TimesFM Vol/Risk** — next-day realized-vol forecast (TimesFM 2.5 when configured, EWMA fallback
+  otherwise) → risk-off stance, ticket vol-sizing and a regime-break alarm; never a price call. [Deep-dive](/docs/desks/timesfm).
+- **NEAR Fundamentals** — DeFiLlama chain TVL / fees / staking yields (free, keyless) → ecosystem
+  risk-on/off tilt for NEAR. [Deep-dive](/docs/desks/near-fundamentals).
+- **Carry** — delta-neutral funding-carry monitor. [Deep-dive](/docs/desks/carry).
+
+## Not a weighted desk: Character Tilt
+
+**Character Tilt** — `asset_efficiency.py` profiles each asset (predictable vs flow-following) and tilts
+the desk ranking (the quadrant above). It's a meta-weighting over the desks, not a voting desk.
+
+## Reliability weights
+
+The PM weights desks by **learned reliability** (`desk_performance`): each desk earns a weight
+`0.6–1.4` from its realized track record (stance vs realized direction, ≥15 samples). Neutral until
+proven, never muted. See [Self-learning](/docs/self-learning).

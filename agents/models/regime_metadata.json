@@ -1,0 +1,25 @@
+{
+  "model_type": "forward_regime_classifier",
+  "asset": "NEAR/USD",
+  "data_source": "exchange klines 1h (scripts/14, Binance data mirror, ~365d) via scripts/02 features",
+  "forecast_horizon_bars": 4,
+  "n_train": 4463,
+  "n_test": 1113,
+  "n_features": 39,
+  "n_classes": 4,
+  "classes": [
+    "Ranging",
+    "Trending_Up",
+    "Trending_Down",
+    "High_Volatility"
+  ],
+  "cv_mean_accuracy": 0.6799461641991924,
+  "cv_std_accuracy": 0.05183635650956457,
+  "test_accuracy": 0.788858939802336,
+  "persistence_baseline_test": 0.7610062893081762,
+  "thresholds": {
+    "adx_strong": 35.67022922493998,
+    "vol_high": 0.029561611550451
+  },
+  "model_class": "XGBClassifier (multi:softprob)"
+}
