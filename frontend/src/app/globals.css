@@ -1,0 +1,279 @@
+@import "tailwindcss";
+
+/* ───────────────────────── HeliQuant theme — "Antimetal" (navy → chartreuse) ─────────────────────────
+   Electric storm over a blueprint: deep-navy hero snapping to a light technical product canvas,
+   bridged by one vivid chartreuse CTA. Blue-tinted shadows; serif display + tight-tracked sans.
+   Static tokens live in @theme; anything referencing a runtime var (next/font) lives in @theme inline. */
+@theme {
+  /* Colors */
+  --color-midnight-navy: #1b2540;   /* structural ink: text, headings, borders on light */
+  --color-deep-cosmos: #001033;     /* dark hero base + dark filled actions */
+  --color-chartreuse: #d0f100;      /* THE single accent — primary CTA only */
+  --color-ice-veil: #e0f6ff;        /* ghost-button borders on dark, atmospheric wash */
+  --color-ghost-canvas: #f8f9fc;    /* primary light page background */
+  --color-pure-surface: #ffffff;    /* elevated cards */
+  --color-slate-ink: #6b7184;       /* secondary text */
+  --color-ash-medium: #7c8293;      /* tertiary text, hairline borders */
+  --color-storm-gray: #596075;      /* mid-tone body on darker surfaces */
+  --color-fog-border: #b1b5c0;      /* hairline borders on light */
+
+  /* Functional status — data punctuation, used sparingly like indicator lights */
+  --color-win: #15a06b;             /* TP / win */
+  --color-loss: #e5484d;            /* SL / loss */
+  --color-onchain: #0080f8;         /* verified / on-chain */
+  --color-aggressive: #7c5cff;      /* AGGRESSIVE sizing */
+  --color-abstain: #7c8293;         /* ABSTAIN (disciplined) */
+
+  /* ── Observatory / Hero4 standard palette (dark "Antimetal" engine) ──
+     Deep void → midnight base, ice-blue instrument text, ONE solar core + flame,
+     ONE chartreuse vein (the validated edge / primary CTA). bull/bear = data only. */
+  --color-void: #030408;            /* deepest backdrop / gear cores */
+  --color-midnight: #05060f;        /* midnight abyss — hero base */
+  --color-glass-border: rgba(186, 215, 247, 0.08); /* hairline on dark glass */
+  --color-solar-core: #ffd06a;      /* incandescent core (PM agent) */
+  --color-solar-flame: #fa520f;     /* solar flame (corona / gradient end) */
+  --color-ice-text: #d8ecf8;        /* comet — primary text on dark */
+  --color-ice-muted: #81899b;       /* interstellar gray — secondary */
+  --color-ice-glow: #b6d9fc;        /* celestial light — desk gear rims */
+  --color-cta: #d0f100;             /* chartreuse — the one vein (OI edge + CTA) */
+  --color-bull: #10b981;            /* up / online indicator */
+  --color-bear: #ef4444;            /* down / risk indicator */
+
+  /* Hero gradient stops */
+  --color-hero-from: #001033;
+  --color-hero-via: #0050f8;
+  --color-hero-to: #5fbdf7;
+
+  /* Type scale (Antimetal) */
+  --text-caption: 13px;
+  --text-body: 16px;
+  --text-subheading: 18px;
+  --text-heading-sm: 22px;
+  --text-heading: 28px;
+  --text-heading-lg: 40px;
+  --text-display: 48px;
+
+  /* Radii */
+  --radius-card: 20px;
+  --radius-card-md: 16px;
+  --radius-card-sm: 6px;
+  --radius-badge: 16px;
+  --radius-pill-lg: 60px;
+
+  /* Blue-tinted elevation (NEVER neutral-black shadows on light) */
+  --shadow-card: rgba(0, 39, 80, 0.03) 0px 56px 72px -16px, rgba(0, 39, 80, 0.03) 0px 32px 32px -16px, rgba(0, 39, 80, 0.04) 0px 6px 12px -3px, rgba(0, 39, 80, 0.04) 0px 0px 0px 1px;
+  --shadow-badge: rgba(0, 39, 80, 0.08) 0px 6px 16px -3px, rgba(0, 39, 80, 0.04) 0px 0px 0px 1px;
+  --shadow-cta: rgba(24, 37, 66, 0.32) 0px 1px 3px 0px, rgba(24, 37, 66, 0.44) 0px 12px 24px -12px, rgba(219, 247, 255, 0.48) 0px 0.5px 0.5px 0px inset;
+
+  /* ── Observatory / Hero4 glass elevation (dark surfaces) ── */
+  --shadow-glass-subtle: rgba(186, 215, 247, 0.12) 0px 0px 0px 1px inset;
+  --shadow-glass-form: rgba(216, 236, 248, 0.15) 0px 1px 1px 0px inset, rgba(168, 216, 245, 0.04) 0px 24px 48px 0px inset, rgba(0, 0, 0, 0.5) 0px 16px 32px 0px;
+  --shadow-cta-btn: rgba(208, 241, 0, 0.4) 0px 0px 12px 0px, rgba(255, 255, 255, 0.4) 0px 1px 1px 0px inset;
+}
+
+/* inline: values that reference runtime CSS vars (next/font, :root) must stay as var() references.
+   Standard faces (Hero4 / Observatory): display = Space Grotesk, mono = JetBrains Mono, sans = Inter.
+   The legacy Geist/Fraunces vars are still emitted by layout.tsx and remain available by name
+   (--font-geist-sans / --font-display-serif / --font-geist-mono) for any older light-canvas section. */
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-sans), var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-display), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-mono), var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
+  /* legacy serif display kept addressable for sections that opt in explicitly */
+  --font-display-serif: var(--font-display-serif), ui-serif, Georgia, serif;
+}
+
+:root {
+  --background: #f8f9fc; /* ghost-canvas */
+  --foreground: #1b2540; /* midnight-navy */
+}
+
+@layer base {
+  *,
+  ::after,
+  ::before {
+    border-color: var(--color-fog-border);
+  }
+  body {
+    background: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-sans);
+    letter-spacing: -0.011em; /* Antimetal tight tracking */
+    -webkit-font-smoothing: antialiased;
+  }
+}
+
+/* ───────────────────────── utilities ───────────────────────── */
+.font-display {
+  font-family: var(--font-display);
+  letter-spacing: -0.01em;
+}
+.hero-gradient {
+  background: linear-gradient(180deg, var(--color-hero-from) 0%, var(--color-hero-via) 55%, var(--color-hero-to) 100%);
+}
+.text-balance {
+  text-wrap: balance;
+}
+.dot-grid {
+  background-image: radial-gradient(rgba(224, 246, 255, 0.18) 1px, transparent 1px);
+  background-size: 22px 22px;
+}
+@keyframes hq-pulse {
+  0%, 100% { opacity: 0.55; }
+  50% { opacity: 1; }
+}
+.hq-pulse {
+  animation: hq-pulse 2.2s ease-in-out infinite;
+}
+
+/* ───────────────────────── Observatory / Hero4 utilities (dark engine) ───────────────────────── */
+
+/* Blueprint grid — 40px ruled lines on the void, faded to a centred radial vignette (from Hero4) */
+.bg-blueprint {
+  background-image:
+    linear-gradient(to right, rgba(186, 215, 247, 0.03) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(186, 215, 247, 0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+  -webkit-mask-image: radial-gradient(ellipse at center, black 10%, transparent 80%);
+  mask-image: radial-gradient(ellipse at center, black 10%, transparent 80%);
+}
+
+/* Solar text fill — incandescent core → flame, clipped to glyphs (the "all-seeing" word) */
+.text-solar-gradient {
+  background: linear-gradient(90deg, var(--color-solar-core), var(--color-solar-flame));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+
+/* Continuous gear rotation — driven entirely in CSS so it never re-renders React.
+   Direction + duration are set inline per-gear; .gear-paused freezes for reduced-motion. */
+@keyframes hq-gear-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+.gear-spin {
+  animation: hq-gear-spin linear infinite;
+}
+.gear-spin-reverse {
+  animation: hq-gear-spin linear infinite reverse;
+}
+.gear-paused {
+  animation-play-state: paused !important;
+}
+
+/* ═══════════════════════ NIGHT GARAGE — dark automotive brutalism (brand v2) ═══════════════════════
+   The HeliQuant landing language: pitch shop floor, carbon panels, bone ink, ONE chartreuse livery
+   accent, hazard seams, racing-sticker plates with hard offset shadows. Tokens are additive: the
+   Observatory tokens above are still used by some app pages. */
+
+@theme {
+  --color-pitch: #0b0b0b;       /* page base — night shop floor */
+  --color-carbon: #161614;      /* panel surface */
+  --color-carbon2: #1e1e1b;     /* raised panel / inset */
+  --color-bone: #f2efe6;        /* ink on dark: text, borders, plates */
+  --color-chartreuse: #c9f24b;  /* THE accent — livery, spark, validated, CTA */
+  --color-steel: #8b8b80;       /* muted text */
+  --color-signal2: #ff5a1f;     /* rare alert: rejected / crash / risk only */
+  --color-bitget: #1ce5cf;      /* the EXECUTION VENUE accent — Bitget teal, used ONLY on Bitget-venue UI */
+}
+
+/* Hazard stripe seam — the signature motif (45° chartreuse/pitch tape between sections) */
+.gr-hazard {
+  background-image: repeating-linear-gradient(
+    -45deg,
+    var(--color-chartreuse) 0 14px,
+    var(--color-pitch) 14px 28px
+  );
+}
+@keyframes gr-stripe-scroll {
+  from { background-position: 0 0; }
+  to { background-position: 39.6px 0; }
+}
+.gr-hazard-live { animation: gr-stripe-scroll 1.6s linear infinite; }
+
+/* Carbon dot grid — panel texture */
+.gr-carbon-dots {
+  background-image: radial-gradient(rgba(242, 239, 230, 0.06) 1px, transparent 1px);
+  background-size: 18px 18px;
+}
+
+/* Hard offset shadows — brutalist sticker depth */
+.gr-shadow-chart { box-shadow: 6px 6px 0 var(--color-chartreuse); }
+.gr-shadow-bone { box-shadow: 4px 4px 0 rgba(242, 239, 230, 0.92); }
+.gr-shadow-ink { box-shadow: 6px 6px 0 rgba(0, 0, 0, 0.55); }
+
+/* Press-down button: shadow collapses, plate drops */
+.gr-press { transition: transform 120ms ease, box-shadow 120ms ease; }
+.gr-press:active { transform: translate(4px, 4px); box-shadow: 0 0 0 var(--color-chartreuse); }
+
+/* Pit-wall marquee */
+@keyframes gr-marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+.gr-marquee { animation: gr-marquee 36s linear infinite; }
+
+/* Rotor turbine idle — slow spin (duration set inline) */
+@keyframes gr-rotor {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+.gr-rotor { animation: gr-rotor linear infinite; }
+
+/* Tach needle: breathe ±1.6° around its resting angle (--gr-angle, set inline) */
+@keyframes gr-needle-breathe {
+  0%, 100% { transform: rotate(calc(var(--gr-angle) - 1.6deg)); }
+  50% { transform: rotate(calc(var(--gr-angle) + 1.6deg)); }
+}
+.gr-needle { animation: gr-needle-breathe 3.4s ease-in-out infinite; transform-origin: 50% 100%; }
+
+/* Spark pulse — the combustion beat (chartreuse) */
+@keyframes gr-spark {
+  0%, 100% { opacity: 0.5; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.12); }
+}
+.gr-spark { animation: gr-spark 1.8s ease-in-out infinite; }
+
+/* Telemetry cursor blink */
+@keyframes gr-blink { 0%, 49% { opacity: 1; } 50%, 100% { opacity: 0; } }
+.gr-blink { animation: gr-blink 1.1s steps(1) infinite; }
+
+/* Slam-in entrance (headline) + rise-in (panels, stagger via animation-delay) */
+@keyframes gr-slam {
+  0% { opacity: 0; transform: translateY(-26px) scale(1.06); }
+  62% { opacity: 1; transform: translateY(4px) scale(0.995); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+.gr-slam { animation: gr-slam 0.62s cubic-bezier(0.22, 1.2, 0.36, 1) both; }
+@keyframes gr-rise {
+  0% { opacity: 0; transform: translateY(22px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+.gr-rise { animation: gr-rise 0.7s cubic-bezier(0.22, 1.1, 0.36, 1) both; }
+
+/* Piston loop — the 4-stroke cylinders (phase via animation-delay) */
+@keyframes gr-piston {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(14px); }
+}
+.gr-piston { animation: gr-piston 2.4s ease-in-out infinite; }
+
+/* REJECTED stamp pop + crash shake */
+@keyframes gr-stamp {
+  0% { opacity: 0; transform: scale(2.1) rotate(-14deg); }
+  60% { opacity: 1; transform: scale(0.94) rotate(-8deg); }
+  100% { opacity: 1; transform: scale(1) rotate(-8deg); }
+}
+.gr-stamp { animation: gr-stamp 0.5s cubic-bezier(0.2, 1.4, 0.3, 1) both; }
+@keyframes gr-shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-7px); }
+  40% { transform: translateX(6px); }
+  60% { transform: translateX(-4px); }
+  80% { transform: translateX(2px); }
+}
+.gr-shake { animation: gr-shake 0.45s ease-out both; }

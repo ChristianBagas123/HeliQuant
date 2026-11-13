@@ -1,0 +1,319 @@
+/* ═══════════════════════ NIGHT GARAGE — landing motion layer (prefix ld-) ═══════════════════════
+   Additive. Colors come only from the @theme tokens in app/globals.css. Loaded by app/page.tsx.
+   Rules: transform/opacity first, one transform-owner per element, every hidden-until-revealed
+   state is scoped under #ld-root[data-js] so the page is complete without JavaScript, and every
+   motion has a calm prefers-reduced-motion equivalent at the bottom of this file. */
+
+/* ── Lenis essentials (from lenis/dist/lenis.css) ── */
+html.lenis,
+html.lenis body { height: auto; }
+.lenis:not(.lenis-autoToggle).lenis-stopped { overflow: clip; }
+.lenis [data-lenis-prevent] { overscroll-behavior: contain; }
+
+/* ── easings: real damped-spring step responses where linear() is supported ── */
+#ld-root {
+  --ld-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ld-spring: cubic-bezier(0.3, 1.5, 0.5, 1);
+  --ld-snap: cubic-bezier(0.34, 1.56, 0.64, 1);
+  position: relative;
+  /* pre-reveal states (scaled stamps, rams) must never widen the page; clip keeps sticky working */
+  overflow-x: clip;
+}
+@supports (transition-timing-function: linear(0, 1)) {
+  #ld-root {
+    --ld-spring: linear(0, 0.067, 0.234, 0.453, 0.68, 0.884, 1.047, 1.158, 1.218, 1.233, 1.215, 1.174, 1.123, 1.07, 1.023, 0.986, 0.961, 0.948, 0.946, 0.951, 0.96, 0.973, 0.985, 0.996, 1.004, 1.009, 1.012, 1.013, 1.011, 1.009, 1.006, 1.003, 1.001, 0.999, 0.998, 0.997, 1);
+    --ld-snap: linear(0, 0.128, 0.393, 0.666, 0.881, 1.016, 1.081, 1.095, 1.08, 1.054, 1.029, 1.009, 0.997, 0.992, 0.991, 0.993, 0.995, 0.998, 0.999, 1);
+  }
+}
+
+/* ── layering: section backgrounds (auto) < grid / 3D canvas (1) < content (2) < chrome ── */
+.ld-content { position: relative; z-index: 2; }
+.ld-grid {
+  position: absolute; inset: 0; z-index: 1; pointer-events: none; opacity: 0.45;
+  background-image: radial-gradient(rgba(242, 239, 230, 0.06) 1px, transparent 1px);
+  background-size: 18px 18px;
+}
+.ld-canvas { position: fixed; inset: 0; z-index: 1; pointer-events: none; mix-blend-mode: screen; opacity: 0; }
+#ld-root section[id] { scroll-margin-top: 64px; }
+
+/* keyboard focus uses the same language as hover */
+#ld-root :focus-visible { outline: 2px solid var(--color-chartreuse); outline-offset: 3px; }
+
+/* ── loops stop off-screen and in hidden tabs ── */
+#ld-root [data-off],
+#ld-root [data-off] *,
+#ld-root[data-hidden] * { animation-play-state: paused !important; }
+
+/* ── reveal system (one IntersectionObserver in LandingShell sets data-in) ── */
+[data-reveal="rise"] {
+  transition: opacity 0.7s var(--ld-out), transform 0.7s var(--ld-out);
+  transition-delay: calc(var(--i, 0) * 80ms);
+}
+#ld-root[data-js] [data-reveal="rise"]:not([data-in]) { opacity: 0; transform: translateY(22px); }
+
+.ld-line { display: block; overflow: hidden; padding-top: 0.08em; margin-top: -0.08em; }
+.ld-line > span {
+  display: block;
+  transition: transform 0.7s var(--ld-out);
+  transition-delay: calc(var(--i, 0) * 80ms);
+}
+#ld-root[data-js] [data-reveal="lines"]:not([data-in]) .ld-line > span { transform: translateY(108%); }
+
+[data-reveal="row"] {
+  transition: opacity 0.4s var(--ld-out), transform 0.4s var(--ld-out), background-color 0.2s;
+  transition-delay: calc(0.1s + var(--i, 0) * 70ms), calc(0.1s + var(--i, 0) * 70ms), 0s;
+}
+#ld-root[data-js] [data-reveal="row"]:not([data-in]) { opacity: 0; transform: translateX(-16px); }
+
+[data-reveal="stamp"] {
+  transform: rotate(var(--r, -8deg));
+  transition: opacity 0.12s linear, transform 0.5s var(--ld-snap);
+  transition-delay: var(--d, 0s);
+}
+#ld-root[data-js] [data-reveal="stamp"]:not([data-in]) { opacity: 0; transform: scale(2.1) rotate(calc(var(--r, -8deg) - 6deg)); }
+
+[data-reveal="swing"] {
+  transform-origin: 50% 0;
+  transition: opacity 0.3s linear, transform 0.9s var(--ld-spring);
+  transition-delay: calc(var(--i, 0) * 60ms);
+}
+#ld-root[data-js] [data-reveal="swing"]:not([data-in]) { opacity: 0; transform: rotate(-7deg) translateY(-12px); }
+
+/* ── hero entrance: waits for the preloader (data-ready), plays immediately without JS ── */
+@keyframes ld-rise { from { opacity: 0; transform: translateY(22px); } to { opacity: 1; transform: none; } }
+@keyframes ld-slam { from { opacity: 0; transform: translateY(-0.4em) scale(1.14); } 55% { opacity: 1; } to { opacity: 1; transform: none; } }
+.ld-enter { animation: ld-rise 0.7s var(--ld-out) both; animation-delay: var(--d, 0s); }
+.ld-word { display: inline-block; white-space: nowrap; }
+.ld-char { display: inline-block; animation: ld-slam 0.62s var(--ld-snap) both; animation-delay: var(--d, 0s); }
+#ld-root[data-js]:not([data-ready]) :is(.ld-enter, .ld-char) { animation-play-state: paused; }
+
+/* ── chunky buttons: magnetic wrapper owns the pull, the button owns the press ── */
+.ld-mag { display: inline-block; transform: translate(var(--mx, 0px), var(--my, 0px)); transition: transform 0.45s var(--ld-snap); }
+.ld-mag[data-pull] { transition-duration: 0.12s; transition-timing-function: linear; }
+.ld-press {
+  --sx: 4px; --sy: 4px; --sc: rgba(242, 239, 230, 0.9);
+  display: inline-block;
+  box-shadow: var(--sx) var(--sy) 0 var(--sc);
+  transition: transform 0.34s var(--ld-snap), box-shadow 0.34s var(--ld-snap), color 0.2s, border-color 0.2s, background-color 0.2s;
+}
+.ld-press:hover,
+.ld-press:focus-visible { transform: translate(-2px, -2px); box-shadow: calc(var(--sx) + 2px) calc(var(--sy) + 2px) 0 var(--sc); }
+.ld-press:active { transform: translate(var(--sx), var(--sy)); box-shadow: 0 0 0 var(--sc); transition-duration: 70ms; }
+.ld-press-chart { --sx: 6px; --sy: 6px; --sc: var(--color-chartreuse); }
+.ld-press-dim { --sc: rgba(242, 239, 230, 0.25); }
+
+/* ── tilt plate: pointer sets --rx/--ry/--gx/--gy; hard shadow shifts opposite the tilt ── */
+.ld-tilt-wrap { perspective: 900px; }
+.ld-tilt {
+  --rx: 0deg; --ry: 0deg; --shx: 6px; --shy: 6px;
+  position: relative;
+  transform: rotateX(var(--rx)) rotateY(var(--ry));
+  transition: transform 0.5s var(--ld-snap), box-shadow 0.5s var(--ld-snap);
+  box-shadow: var(--shx) var(--shy) 0 var(--tilt-shadow, rgba(0, 0, 0, 0.55));
+}
+.ld-tilt[data-live] { transition-duration: 0.1s; transition-timing-function: linear; }
+.ld-tilt::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none; opacity: 0; transition: opacity 0.3s;
+  background: radial-gradient(circle 180px at var(--gx, 50%) var(--gy, 50%), rgba(242, 239, 230, 0.1), transparent 70%);
+}
+.ld-tilt[data-live]::after { opacity: 1; }
+
+/* ── odometer: digits roll to the REAL value; the resting state is always the real value ── */
+.ld-odo { display: inline-flex; align-items: flex-start; overflow: hidden; height: 1em; line-height: 1; vertical-align: bottom; transition: opacity 0.2s linear; }
+/* until its roll starts the figure is hidden, so a not-yet-real value is never readable */
+#ld-root[data-js] [data-reveal="odo"]:not([data-in]) .ld-odo { opacity: 0; }
+.ld-odo-col { display: block; flex: none; height: 10em; transform: translateY(calc(var(--n) * -10%)); transition: transform 0.9s var(--ld-snap); transition-delay: calc(0.15s + var(--i, 0) * 70ms); }
+.ld-odo-col > span { display: block; height: 1em; }
+#ld-root[data-js] [data-reveal="odo"]:not([data-in]) .ld-odo-col { transform: translateY(0); }
+
+/* ── tachometer ── */
+/* needle + arc: TachEngine writes their transform / dashoffset inline every frame (no transitions) */
+.ld-needle { position: absolute; left: 50%; top: 0; width: 0; height: 50%; transform-origin: 50% 100%; transform: rotate(var(--a)); z-index: 1; }
+#ld-root[data-js]:not([data-ready]) .ld-needle { transform: rotate(var(--a0)); }
+.ld-needle-tip { transition: box-shadow 0.2s, background-color 0.2s; }
+.ld-tach[data-gear="1"] .ld-needle-tip,
+.ld-tach[data-gear="2"] .ld-needle-tip { box-shadow: 0 0 10px 2px rgba(201, 242, 75, 0.75); }
+.ld-tach[data-limiter] .ld-needle-tip { background: var(--color-signal2); box-shadow: 0 0 14px 3px rgba(255, 90, 31, 0.85); }
+.ld-tach-fill { stroke-dasharray: 100 100; stroke-dashoffset: calc(100 - var(--v)); transition: filter 0.3s; }
+#ld-root[data-js]:not([data-ready]) .ld-tach-fill { stroke-dashoffset: 100; }
+.ld-tach:is([data-gear="1"], [data-gear="2"]) .ld-tach-fill { filter: drop-shadow(0 0 5px rgba(201, 242, 75, 0.7)); }
+.ld-tach-redline { transition: filter 0.15s, stroke-width 0.15s; }
+.ld-tach[data-limiter] .ld-tach-redline { filter: drop-shadow(0 0 7px rgba(255, 90, 31, 0.95)); stroke-width: 9; }
+@keyframes ld-stamp-in { from { opacity: 0; transform: scale(2) rotate(-10deg); } to { opacity: 1; transform: none; } }
+.ld-stamp-in { animation: ld-stamp-in 0.45s var(--ld-snap) both; animation-delay: var(--d, 0s); }
+#ld-root[data-js]:not([data-ready]) .ld-hero .ld-stamp-in { animation-play-state: paused; }
+
+/* rev shake uses `translate`, the shift kick uses `scale` + `rotate`: separate properties, so they stack */
+@keyframes ld-rev { 0% { translate: 0 0; } 25% { translate: 1px -1px; } 50% { translate: -1px 1px; } 75% { translate: 1px 1px; } 100% { translate: 0 0; } }
+@keyframes ld-kick-up { 0% { scale: 1; rotate: 0deg; } 18% { scale: 1.035; rotate: -0.8deg; } 45% { scale: 0.992; rotate: 0.4deg; } 100% { scale: 1; rotate: 0deg; } }
+@keyframes ld-kick-down { 0% { scale: 1; } 30% { scale: 1.014; } 100% { scale: 1; } }
+#ld-root[data-rev] .ld-tach { animation: ld-rev 0.09s linear infinite; }
+.ld-tach[data-kick="up"] { animation: ld-kick-up 0.5s var(--ld-out); }
+.ld-tach[data-kick="down"] { animation: ld-kick-down 0.4s var(--ld-out); }
+#ld-root[data-rev] .ld-tach[data-kick="up"] { animation: ld-rev 0.09s linear infinite, ld-kick-up 0.5s var(--ld-out); }
+#ld-root[data-rev] .ld-tach[data-kick="down"] { animation: ld-rev 0.09s linear infinite, ld-kick-down 0.4s var(--ld-out); }
+.ld-rev-label { opacity: 0; transition: opacity 0.15s; }
+.ld-tach[data-limiter] .ld-rev-label { opacity: 1; border-color: var(--color-signal2); color: var(--color-signal2); }
+
+/* gearbox: the engaged gear is lit; N in bone, a driving gear in chartreuse with a glow */
+.ld-gear { border-color: rgba(242, 239, 230, 0.2); background: var(--color-pitch); color: rgba(242, 239, 230, 0.3); font-weight: 600; transition: background-color 0.18s, border-color 0.18s, color 0.18s, box-shadow 0.25s; }
+.ld-gear[data-on] { border-color: var(--color-bone); background: var(--color-bone); color: var(--color-pitch); font-weight: 800; box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.6); }
+.ld-gear:is([data-gear="1"], [data-gear="2"])[data-on] { border-color: var(--color-chartreuse); background: var(--color-chartreuse); box-shadow: 0 0 18px 2px rgba(201, 242, 75, 0.55), 3px 3px 0 rgba(0, 0, 0, 0.6); }
+.ld-gear-face { display: block; }
+@keyframes ld-gear-hit { 0% { transform: scale(2.1) rotate(-12deg); opacity: 0; filter: blur(2px); } 55% { transform: scale(0.88) rotate(2deg); opacity: 1; filter: none; } 100% { transform: none; } }
+.ld-gear[data-hit] .ld-gear-face { animation: ld-gear-hit 0.42s var(--ld-snap); }
+
+/* shift effects: a light flash over the dial, two shock rings from the hub, sparks off the needle
+   tip, and a big gear callout. All fired by TachEngine through data-shift="up|down". */
+.ld-shift-fx { z-index: 2; }
+.ld-shift-flash { position: absolute; inset: 6%; border-radius: 50%; opacity: 0; background: radial-gradient(circle, rgba(242, 239, 230, 0.32), rgba(201, 242, 75, 0.14) 38%, transparent 68%); }
+.ld-shift-ring { position: absolute; left: 50%; top: 50%; width: 56%; aspect-ratio: 1; margin: -28% 0 0 -28%; border-radius: 50%; border: 2px solid var(--color-chartreuse); box-shadow: 0 0 22px 4px rgba(201, 242, 75, 0.55), inset 0 0 18px 2px rgba(201, 242, 75, 0.35); opacity: 0; }
+.ld-shift-sparks { position: absolute; left: var(--sx, 88%); top: var(--sy, 54%); width: 0; height: 0; }
+.ld-shift-sparks > span { position: absolute; left: -2px; top: -2px; width: 4px; height: 4px; border-radius: 50%; background: #fffbe8; box-shadow: 0 0 8px 2px rgba(201, 242, 75, 0.9); opacity: 0; }
+/* the callout is a dark plate stamped over the hub, so the numeral reads against the glowing rotor */
+.ld-shift-callout { position: absolute; left: 50%; top: 50%; display: flex; flex-direction: column; align-items: center; translate: -50% -50%; padding: 6px 16px 7px; border: 2px solid var(--color-chartreuse); background: rgba(11, 11, 11, 0.86); box-shadow: 0 0 26px 4px rgba(201, 242, 75, 0.4), inset 0 0 14px rgba(201, 242, 75, 0.18); opacity: 0; }
+.ld-shift-fx[data-shift="down"] .ld-shift-callout { border-color: rgba(242, 239, 230, 0.7); box-shadow: 0 0 16px 2px rgba(242, 239, 230, 0.2); }
+.ld-shift-num { font-family: var(--font-display); font-weight: 800; font-size: clamp(2.6rem, 6vw, 4rem); line-height: 0.9; color: transparent; background: linear-gradient(180deg, #fbffe9 0%, var(--color-chartreuse) 55%, #6f8a1c 100%); -webkit-background-clip: text; background-clip: text; filter: drop-shadow(0 0 16px rgba(201, 242, 75, 0.65)); }
+.ld-shift-tag { margin-top: 2px; font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.3em; text-transform: uppercase; color: var(--color-bone); white-space: nowrap; }
+
+@keyframes ld-shift-flash { 0% { opacity: 0; } 12% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes ld-shift-ring { 0% { opacity: 0.95; transform: scale(0.55); } 100% { opacity: 0; transform: scale(1.75); } }
+@keyframes ld-shift-spark { 0% { opacity: 1; transform: translate(0, 0) scale(1.2); } 100% { opacity: 0; transform: translate(var(--dx), var(--dy)) scale(0.2); } }
+@keyframes ld-shift-callout { 0% { opacity: 0; transform: scale(1.9); letter-spacing: 0.2em; filter: blur(6px); } 16% { opacity: 1; transform: scale(0.96); filter: none; } 26% { transform: scale(1.03); } 70% { opacity: 1; transform: scale(1); } 100% { opacity: 0; transform: scale(0.94) translateY(-6px); } }
+.ld-shift-fx[data-shift="up"] .ld-shift-flash { animation: ld-shift-flash 0.55s ease-out; }
+.ld-shift-fx[data-shift="up"] .ld-shift-ring { animation: ld-shift-ring 0.7s cubic-bezier(0.1, 0.7, 0.3, 1); }
+.ld-shift-fx[data-shift="up"] .ld-shift-ring-2 { animation-delay: 0.1s; animation-fill-mode: backwards; }
+.ld-shift-fx[data-shift="up"] .ld-shift-sparks > span { animation: ld-shift-spark 0.6s cubic-bezier(0.1, 0.7, 0.3, 1); animation-delay: calc(var(--i) * 12ms); animation-fill-mode: backwards; }
+.ld-shift-fx[data-shift] .ld-shift-callout { animation: ld-shift-callout 0.95s var(--ld-out); }
+.ld-shift-fx[data-shift="down"] .ld-shift-callout { animation-duration: 0.7s; }
+.ld-shift-fx[data-shift="down"] .ld-shift-ring:not(.ld-shift-ring-2) { animation: ld-shift-ring 0.5s ease-out; border-color: rgba(242, 239, 230, 0.6); box-shadow: 0 0 12px 2px rgba(242, 239, 230, 0.3); }
+
+.ld-static-turbine { transition: opacity 0.5s; animation-duration: 8s; }
+/* glint sweep across the flat rotor */
+@keyframes ld-glint { 0%, 55% { transform: translateX(-260px) rotate(25deg); } 100% { transform: translateX(260px) rotate(25deg); } }
+.ld-turbine-glint { animation: ld-glint 3.8s cubic-bezier(0.45, 0, 0.25, 1) infinite; }
+#ld-root[data-gl] .ld-static-turbine,
+#ld-root[data-gl] .ld-static-turbine * { opacity: 0; animation-play-state: paused; }
+
+/* ── nav ── */
+.ld-nav { position: sticky; top: 0; z-index: 70; transition: transform 0.35s var(--ld-out), border-color 0.3s, background-color 0.3s; }
+.ld-nav[data-hidden] { transform: translateY(-101%); }
+/* the compact state snaps (no padding transition: layout is never animated) */
+.ld-nav[data-compact] .ld-nav-inner { padding-top: 0.4rem; padding-bottom: 0.4rem; }
+.ld-navlink { position: relative; }
+.ld-navlink::after { content: ""; position: absolute; left: 0; right: 0; bottom: -6px; height: 2px; background: var(--color-chartreuse); transform: scaleX(0); transform-origin: 0 50%; transition: transform 0.3s var(--ld-out); }
+.ld-navlink:hover::after,
+.ld-navlink:focus-visible::after { transform: scaleX(1); }
+
+/* ── hazard seam: band breathes open as it crosses the viewport, stripes scrub with scroll ── */
+.ld-seam { position: relative; z-index: 2; height: 14px; }
+.ld-seam-band { position: absolute; left: 0; right: 0; top: 50%; height: 44px; margin-top: -22px; overflow: hidden; }
+.ld-seam-strip { position: absolute; top: 0; bottom: 0; left: -480px; right: -480px; }
+
+/* ── preloader "engine start" ── */
+.ld-pre { position: fixed; inset: 0; z-index: 100; display: none; }
+#ld-root[data-js]:not([data-skip]) .ld-pre { display: block; }
+.ld-pre-half { position: absolute; left: 0; right: 0; height: 50.5%; background: var(--color-pitch); transition: transform 0.45s cubic-bezier(0.7, 0, 0.2, 1); }
+.ld-pre-half.top { top: 0; border-bottom: 14px solid transparent; border-image: repeating-linear-gradient(-45deg, var(--color-chartreuse) 0 14px, var(--color-pitch) 14px 28px) 14; }
+.ld-pre-half.bottom { bottom: 0; }
+.ld-pre[data-phase="open"] .ld-pre-half.top { transform: translateY(-101%); }
+.ld-pre[data-phase="open"] .ld-pre-half.bottom { transform: translateY(101%); }
+.ld-pre-core { position: absolute; inset: 0; display: grid; place-items: center; transition: opacity 0.18s; }
+.ld-pre[data-phase="open"] .ld-pre-core { opacity: 0; }
+@keyframes ld-spinup { from { transform: rotate(0deg); } to { transform: rotate(1080deg); } }
+.ld-pre-rotor { animation: ld-spinup 1.1s cubic-bezier(0.5, 0, 0.9, 0.6) both; }
+.ld-pre-n { opacity: 0; }
+.ld-pre:is([data-phase="n"], [data-phase="open"]) .ld-pre-n { animation: ld-stamp-in 0.22s var(--ld-snap) both; }
+/* failsafe: never hold the page if scripts die mid-sequence */
+@keyframes ld-pre-failsafe { to { visibility: hidden; } }
+.ld-pre { animation: ld-pre-failsafe 0.01s linear 3.6s forwards; }
+
+/* ── custom cursor ring (additive: the native cursor is never hidden) ── */
+.ld-cursor { position: fixed; left: 0; top: 0; z-index: 90; pointer-events: none; opacity: 0; transition: opacity 0.25s; }
+.ld-cursor[data-on] { opacity: 1; }
+.ld-cursor-ring { position: absolute; left: -18px; top: -18px; width: 36px; height: 36px; border: 2px solid rgba(242, 239, 230, 0.55); transition: transform 0.35s var(--ld-snap), border-color 0.2s, border-radius 0.2s; border-radius: 50%; }
+.ld-cursor[data-state="link"] .ld-cursor-ring { transform: scale(1.45); border-color: var(--color-chartreuse); }
+.ld-cursor[data-state="press"] .ld-cursor-ring { transform: scale(1.3) rotate(45deg); border-radius: 0; border-color: var(--color-chartreuse); }
+.ld-cursor[data-state="drag"] .ld-cursor-ring { transform: scale(2.1); border-color: var(--color-chartreuse); border-style: dashed; }
+.ld-cursor[data-state="inspect"] .ld-cursor-ring { transform: scale(1.2); border-radius: 0; border-color: rgba(242, 239, 230, 0.9); }
+.ld-cursor[data-down] .ld-cursor-ring { transform: scale(0.8); }
+.ld-cursor-label { position: absolute; left: 26px; top: 14px; white-space: nowrap; opacity: 0; transition: opacity 0.2s; }
+.ld-cursor:not([data-state="default"]) .ld-cursor-label { opacity: 1; }
+
+/* ── atmosphere: grain + vignette above content, flashlight grid below it ── */
+.ld-vignette { position: fixed; inset: 0; z-index: 60; pointer-events: none; background: radial-gradient(ellipse 120% 90% at 50% 45%, transparent 55%, rgba(0, 0, 0, 0.42) 100%); }
+.ld-grain { position: fixed; inset: 0; z-index: 61; pointer-events: none; opacity: 0.05; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.95 0 0 0 0 0.94 0 0 0 0 0.9 0 0 0 1 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E"); }
+.ld-flash { position: fixed; left: 0; top: 0; z-index: 1; width: 432px; height: 432px; margin: -216px 0 0 -216px; pointer-events: none; overflow: hidden; opacity: 0; transition: opacity 0.4s; -webkit-mask-image: radial-gradient(circle closest-side, #000 0%, transparent 100%); mask-image: radial-gradient(circle closest-side, #000 0%, transparent 100%); }
+.ld-flash[data-on] { opacity: 1; }
+.ld-flash-grid { position: absolute; left: -18px; top: -18px; right: -18px; bottom: -18px; background-image: radial-gradient(rgba(242, 239, 230, 0.34) 1px, transparent 1px); background-size: 18px 18px; }
+
+/* ── scroll progress tach ── */
+.ld-scrolltach { position: fixed; right: 18px; bottom: 18px; z-index: 65; pointer-events: none; }
+
+/* ── engine cycle: pinned stage on wide + tall screens only ── */
+@media (min-width: 1024px) and (min-height: 700px) {
+  .ld-pin { height: 420vh; }
+  /* sticky makes its own stacking context, so it needs the content layer's z-index itself */
+  .ld-pin-inner { position: sticky; top: 0; height: 100vh; z-index: 2; }
+}
+.ld-stage { transition: background-color 0.3s, border-color 0.3s, box-shadow 0.35s var(--ld-snap), transform 0.35s var(--ld-snap); }
+.ld-stage[data-active] { transform: translate(-3px, -3px); box-shadow: 6px 6px 0 rgba(201, 242, 75, 0.85); }
+.ld-lamp { transition: background-color 0.2s, box-shadow 0.2s; }
+
+/* ── crash test: ram → impact → debris → stamp (all triggered by data-in on the stage) ── */
+@keyframes ld-ram { 0% { transform: translateX(-56px); } 62% { transform: translateX(-56px); } 78% { transform: translateX(18px); } 100% { transform: translateX(0); } }
+@keyframes ld-impact { 0%, 100% { transform: translateX(0); } 15% { transform: translateX(-9px); } 35% { transform: translateX(7px); } 55% { transform: translateX(-5px); } 75% { transform: translateX(3px); } }
+@keyframes ld-debris { 0% { opacity: 0; transform: translate(0, 0) rotate(0deg); } 8% { opacity: 1; } 100% { opacity: 0; transform: translate(var(--dx), var(--dy)) rotate(var(--dr)); } }
+#ld-root[data-js] [data-reveal="crash"]:not([data-in]) .ld-ram { transform: translateX(-56px); }
+[data-reveal="crash"][data-in] .ld-ram { animation: ld-ram 0.9s cubic-bezier(0.5, 0, 1, 1) both; }
+[data-reveal="crash"][data-in] .ld-impact { animation: ld-impact 0.45s ease-out 0.66s both; }
+.ld-debris { position: absolute; left: 50%; top: 50%; width: 9px; height: 9px; opacity: 0; }
+[data-reveal="crash"][data-in] .ld-debris { animation: ld-debris 0.8s cubic-bezier(0.1, 0.7, 0.3, 1) 0.68s both; }
+[data-reveal="crash"] .ld-crash-stamp { transform: rotate(-10deg); transition: opacity 0.12s linear 1.05s, transform 0.5s var(--ld-snap) 1.05s; }
+#ld-root[data-js] [data-reveal="crash"]:not([data-in]) .ld-crash-stamp { opacity: 0; transform: scale(2.2) rotate(-16deg); }
+
+/* ── dyno ── */
+@keyframes ld-shake { 0%, 100% { transform: translateX(0); } 20% { transform: translateX(-6px); } 40% { transform: translateX(5px); } 60% { transform: translateX(-3px); } 80% { transform: translateX(2px); } }
+.ld-dyno[data-done] { animation: ld-shake 0.4s ease-out 0.08s both; }
+.ld-dyno-stamp { transform: rotate(-8deg); transition: opacity 0.1s linear, transform 0.42s var(--ld-snap); }
+.ld-dyno:not([data-done]) .ld-dyno-stamp { opacity: 0; transform: scale(2) rotate(-14deg); }
+
+/* ── black box: lap rows feed in only when real rows arrive; the seal dot stamps after ── */
+@keyframes ld-lap { from { opacity: 0; transform: translateX(-14px); } to { opacity: 1; transform: none; } }
+@keyframes ld-seal { 0% { opacity: 0; transform: scale(2.4); } 100% { opacity: 1; transform: scale(1); } }
+.ld-lap { animation: ld-lap 0.42s var(--ld-out) both; animation-delay: calc(var(--i, 0) * 70ms); }
+.ld-lap:hover { background: rgba(201, 242, 75, 0.05); box-shadow: inset 3px 0 0 var(--color-chartreuse); }
+.ld-seal { display: inline-block; animation: ld-seal 0.3s var(--ld-snap) both; animation-delay: calc(0.32s + var(--i, 0) * 70ms); }
+
+/* ── report rows + garage tags ── */
+.ld-report-row:hover,
+.ld-report-row:focus-within { background: rgba(201, 242, 75, 0.045); box-shadow: inset 3px 0 0 var(--color-chartreuse); }
+.ld-part { transition: border-color 0.25s; }
+
+/* ═══════ prefers-reduced-motion: no pinning, no travel, no loops — content stays complete ═══════ */
+@media (prefers-reduced-motion: reduce) {
+  #ld-root [data-reveal],
+  #ld-root [data-reveal] *,
+  #ld-root .ld-needle,
+  #ld-root .ld-tach-fill,
+  #ld-root .ld-press,
+  #ld-root .ld-mag,
+  #ld-root .ld-tilt,
+  #ld-root .ld-nav,
+  #ld-root .ld-stage { transition-duration: 0.01ms !important; transition-delay: 0ms !important; }
+  #ld-root[data-js] [data-reveal]:not([data-in]),
+  #ld-root[data-js] [data-reveal]:not([data-in]) :is(.ld-line > span, .ld-odo-col, .ld-ram, .ld-crash-stamp) { opacity: 1; transform: none; }
+  #ld-root[data-js] [data-reveal="stamp"]:not([data-in]) { transform: rotate(var(--r, -8deg)); }
+  #ld-root[data-js] [data-reveal="odo"]:not([data-in]) .ld-odo-col { transform: translateY(calc(var(--n) * -10%)); }
+  #ld-root[data-js] [data-reveal="odo"]:not([data-in]) .ld-odo { opacity: 1; }
+  #ld-root * { animation-duration: 0.01ms !important; animation-delay: 0ms !important; animation-iteration-count: 1 !important; }
+  #ld-root .ld-debris { display: none; }
+  #ld-root .ld-pin { height: auto; }
+  #ld-root .ld-pin-inner { position: static; height: auto; }
+  #ld-root .ld-stage[data-active] { transform: none; }
+  #ld-root .ld-canvas,
+  #ld-root .ld-cursor,
+  #ld-root .ld-flash,
+  #ld-root .ld-pre { display: none !important; }
+  #ld-root .ld-nav[data-hidden] { transform: none; }
+}

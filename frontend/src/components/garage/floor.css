@@ -1,0 +1,174 @@
+/* ═══════════════════ THE LIVE FLOOR — motion + the V8 core (prefix fl-) ═══════════════════
+   Loaded by app/app/page.tsx. Colours come from the @theme tokens in app/globals.css.
+   Every hidden-until-revealed state is scoped under html[data-fl-js] so the page is complete
+   without JavaScript, and every motion has a calm prefers-reduced-motion equivalent at the end. */
+
+:root {
+  --fl-nav: 66px;
+  --fl-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --fl-snap: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* ── page scroll progress: a hairline under the nav ── */
+.fl-progress { position: fixed; left: 0; right: 0; top: var(--fl-nav); z-index: 49; height: 2px; pointer-events: none; transform-origin: 0 50%; transform: scaleX(var(--fl-scroll, 0)); background: linear-gradient(90deg, var(--color-chartreuse), #f3ffc6); box-shadow: 0 0 10px rgba(201, 242, 75, 0.6); }
+
+/* ── title: words rise from behind a mask ── */
+.fl-title-line { display: block; overflow: hidden; padding-top: 0.06em; margin-top: -0.06em; }
+.fl-title-line > span { display: inline-block; animation: fl-rise-in 0.9s var(--fl-out) both; animation-delay: calc(0.08s + var(--i, 0) * 90ms); }
+@keyframes fl-rise-in { from { transform: translateY(105%); } to { transform: none; } }
+.fl-fade-in { animation: fl-fade-up 0.8s var(--fl-out) both; animation-delay: var(--d, 0.3s); }
+@keyframes fl-fade-up { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+
+/* ── reveal on scroll ── */
+[data-fx] { transition: opacity 0.8s var(--fl-out), transform 0.8s var(--fl-out); transition-delay: calc(var(--i, 0) * 70ms); }
+html[data-fl-js] [data-fx="rise"]:not([data-in]) { opacity: 0; transform: translateY(26px); }
+/* wipe: a chartreuse bar sweeps across, the content appears behind it. (Never clip the observed
+   element itself: IntersectionObserver treats a fully clipped element as off screen.) */
+[data-fx="wipe"] { position: relative; overflow: hidden; }
+[data-fx="wipe"] > * { transition: opacity 0.4s linear 0.32s; }
+html[data-fl-js] [data-fx="wipe"]:not([data-in]) > * { opacity: 0; }
+[data-fx="wipe"]::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: var(--color-chartreuse); transform: scaleX(0); transform-origin: 0 50%; }
+[data-fx="wipe"][data-in]::after { animation: fl-wipe 0.75s var(--fl-out); }
+@keyframes fl-wipe { 0% { transform: scaleX(0); transform-origin: 0 50%; } 48% { transform: scaleX(1); transform-origin: 0 50%; } 52% { transform: scaleX(1); transform-origin: 100% 50%; } 100% { transform: scaleX(0); transform-origin: 100% 50%; } }
+html[data-fl-js] [data-fx="stagger"]:not([data-in]) > * { opacity: 0; transform: translateY(16px); }
+[data-fx="stagger"] > * { transition: opacity 0.6s var(--fl-out), transform 0.6s var(--fl-out); }
+[data-fx="stagger"] > *:nth-child(1) { transition-delay: 0.05s; }
+[data-fx="stagger"] > *:nth-child(2) { transition-delay: 0.12s; }
+[data-fx="stagger"] > *:nth-child(3) { transition-delay: 0.19s; }
+[data-fx="stagger"] > *:nth-child(4) { transition-delay: 0.26s; }
+[data-fx="stagger"] > *:nth-child(5) { transition-delay: 0.33s; }
+[data-fx="stagger"] > *:nth-child(6) { transition-delay: 0.4s; }
+[data-fx="stagger"] > *:nth-child(n + 7) { transition-delay: 0.46s; }
+
+/* ── cards: a light sweeps the border on hover, the card tilts toward the cursor ── */
+.fl-card { position: relative; isolation: isolate; transition: opacity 0.8s var(--fl-out), border-color 0.3s, box-shadow 0.4s var(--fl-out), transform 0.6s var(--fl-out); }
+.fl-card::after {
+  content: ""; position: absolute; inset: -2px; z-index: -1; pointer-events: none; opacity: 0; transition: opacity 0.35s;
+  background: conic-gradient(from var(--fl-angle, 0deg), transparent 0 70%, rgba(201, 242, 75, 0.9) 82%, transparent 92%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask-composite: exclude; padding: 2px;
+}
+@property --fl-angle { syntax: "<angle>"; inherits: false; initial-value: 0deg; }
+@keyframes fl-orbit { to { --fl-angle: 360deg; } }
+.fl-card:hover::after, .fl-card:focus-within::after { opacity: 1; animation: fl-orbit 2.4s linear infinite; }
+.fl-card:hover { border-color: rgba(201, 242, 75, 0.45); box-shadow: 0 24px 60px -30px rgba(201, 242, 75, 0.35); }
+.fl-tilt { transform: perspective(1100px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)); transform-style: preserve-3d; }
+.fl-tilt::before {
+  content: ""; position: absolute; inset: 0; pointer-events: none; opacity: 0; transition: opacity 0.3s;
+  background: radial-gradient(420px circle at var(--mx, 50%) var(--my, 50%), rgba(242, 239, 230, 0.07), transparent 60%);
+}
+.fl-tilt:hover::before { opacity: 1; }
+
+/* stat tiles */
+.fl-stat { transition: opacity 0.6s var(--fl-out), transform 0.45s var(--fl-out); }
+.fl-stat:hover { transform: translateY(-3px); }
+.fl-stat:hover .fl-stat-v { text-shadow: 0 0 18px rgba(201, 242, 75, 0.45); }
+
+/* decision feed: new rows slide in; rows light up on hover */
+.fl-row { transition: background-color 0.25s, box-shadow 0.25s; animation: fl-row-in 0.6s var(--fl-out) both; animation-delay: calc(var(--i, 0) * 60ms); }
+.fl-row:hover { background: rgba(201, 242, 75, 0.04); box-shadow: inset 3px 0 0 var(--color-chartreuse); }
+@keyframes fl-row-in { from { opacity: 0; transform: translateX(-14px); } to { opacity: 1; transform: none; } }
+
+/* the CTA: shine sweep */
+.fl-cta { position: relative; overflow: hidden; }
+.fl-cta::after { content: ""; position: absolute; inset: 0; transform: translateX(-120%) skewX(-18deg); background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.55), transparent); transition: transform 0.7s var(--fl-out); }
+.fl-cta:hover::after { transform: translateX(120%) skewX(-18deg); }
+
+/* text shine for accents */
+.fl-shine { background: linear-gradient(100deg, var(--color-chartreuse) 0 40%, #fbffe6 50%, var(--color-chartreuse) 60% 100%); background-size: 260% 100%; -webkit-background-clip: text; background-clip: text; color: transparent; animation: fl-shine 5s ease-in-out infinite; }
+@keyframes fl-shine { 0%, 55% { background-position: 100% 0; } 100% { background-position: -60% 0; } }
+
+/* ═══════════════════ the V8 core ═══════════════════ */
+.fl-core { height: 380vh; }
+.fl-core-stage { position: sticky; top: var(--fl-nav); height: calc(100svh - var(--fl-nav)); overflow: hidden; }
+.fl-core[data-reduced] { height: auto; }
+.fl-core[data-reduced] .fl-core-stage { position: relative; top: 0; height: max(560px, calc(100svh - var(--fl-nav))); }
+@media (max-width: 767px) { .fl-core { height: 300vh; } }
+
+.fl-core-vignette { background: radial-gradient(ellipse 75% 70% at 50% 52%, transparent 55%, rgba(11, 11, 11, 0.85) 100%), linear-gradient(180deg, var(--color-pitch) 0, transparent 14%, transparent 86%, var(--color-pitch) 100%); }
+.fl-warm { animation: fl-warm 1.6s ease-in-out infinite; }
+@keyframes fl-warm { 50% { opacity: 0.35; } }
+
+.fl-core-head { transition: opacity 0.4s var(--fl-out), transform 0.5s var(--fl-out); }
+.fl-core-stage[data-selected] .fl-core-head { opacity: 0.18; transform: translateY(-8px); }
+@media (max-width: 767px) { .fl-core-stage[data-selected] .fl-core-head { opacity: 0; } }
+
+/* story rail */
+.fl-rail-step { color: rgba(139, 139, 128, 0.55); transition: color 0.4s, transform 0.5s var(--fl-out); }
+.fl-rail-d { opacity: 0; max-height: 0; overflow: hidden; transition: opacity 0.4s, max-height 0.5s var(--fl-out); }
+.fl-core-stage[data-step="0"] .fl-rail-step[data-i="0"],
+.fl-core-stage[data-step="1"] .fl-rail-step[data-i="1"],
+.fl-core-stage[data-step="2"] .fl-rail-step[data-i="2"],
+.fl-core-stage[data-step="3"] .fl-rail-step[data-i="3"] { color: var(--color-chartreuse); transform: translateX(6px); }
+.fl-core-stage[data-step="0"] .fl-rail-step[data-i="0"] .fl-rail-d,
+.fl-core-stage[data-step="1"] .fl-rail-step[data-i="1"] .fl-rail-d,
+.fl-core-stage[data-step="2"] .fl-rail-step[data-i="2"] .fl-rail-d,
+.fl-core-stage[data-step="3"] .fl-rail-step[data-i="3"] .fl-rail-d { opacity: 0.75; max-height: 2em; color: var(--color-bone); }
+.fl-rail-bar { position: relative; width: 140px; height: 2px; margin-top: 14px; background: rgba(242, 239, 230, 0.12); }
+.fl-rail-bar::after { content: ""; position: absolute; inset: 0; transform-origin: 0 50%; transform: scaleX(var(--p, 0)); background: var(--color-chartreuse); box-shadow: 0 0 8px rgba(201, 242, 75, 0.7); }
+.fl-core-stage[data-selected] .fl-rail { opacity: 0; transition: opacity 0.3s; }
+
+/* hover tooltip */
+.fl-tip { padding: 7px 11px 8px; background: rgba(11, 11, 11, 0.88); border-left: 2px solid var(--color-chartreuse); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6); backdrop-filter: blur(6px); opacity: 0; transition: opacity 0.15s; will-change: transform; z-index: 12; }
+.fl-tip[data-on] { opacity: 1; }
+
+/* anatomy hotspots */
+.fl-spot { z-index: 11; transition: opacity 0.25s; will-change: transform; }
+.fl-spot-dot { position: absolute; left: -6px; top: -6px; width: 12px; height: 12px; border-radius: 50%; background: var(--color-chartreuse); box-shadow: 0 0 0 3px rgba(11, 11, 11, 0.8), 0 0 14px 2px rgba(201, 242, 75, 0.8); }
+.fl-spot-dot::after { content: ""; position: absolute; inset: -6px; border-radius: 50%; border: 1px solid var(--color-chartreuse); animation: fl-ping 1.8s var(--fl-out) infinite; }
+@keyframes fl-ping { from { transform: scale(0.5); opacity: 1; } to { transform: scale(2.2); opacity: 0; } }
+.fl-spot-label { position: absolute; left: 16px; top: -11px; display: flex; align-items: center; gap: 7px; white-space: nowrap; padding: 3px 9px 3px 3px; background: rgba(11, 11, 11, 0.86); border: 1px solid rgba(242, 239, 230, 0.16); font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-bone); animation: fl-fade-up 0.5s var(--fl-out) both; }
+.fl-spot[data-flip] .fl-spot-label { left: auto; right: 16px; flex-direction: row-reverse; padding: 3px 3px 3px 9px; }
+@media (max-width: 767px) { .fl-spot-label { font-size: 9px; } }
+.fl-spot-num { display: inline-grid; place-items: center; flex: none; width: 17px; height: 17px; background: var(--color-chartreuse); color: var(--color-pitch); font-family: var(--font-mono); font-size: 10px; font-weight: 700; }
+
+/* parts list: a column on the right (desktop), a scrolling strip at the bottom (phones) */
+.fl-parts { right: 24px; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 4px; transition: opacity 0.35s, transform 0.5s var(--fl-out); }
+.fl-core-stage[data-selected] .fl-parts { opacity: 0; pointer-events: none; transform: translateY(-50%) translateX(24px); }
+.fl-chip { display: flex; flex-direction: column; align-items: flex-end; padding: 6px 12px; border: 1px solid rgba(242, 239, 230, 0.14); background: rgba(11, 11, 11, 0.7); backdrop-filter: blur(4px); text-align: right; transition: border-color 0.2s, background-color 0.2s, transform 0.35s var(--fl-out); animation: fl-chip-in 0.6s var(--fl-out) both; animation-delay: calc(0.2s + var(--i, 0) * 45ms); }
+@keyframes fl-chip-in { from { opacity: 0; transform: translateX(18px); } to { opacity: 1; transform: none; } }
+.fl-chip-label { font-family: var(--font-mono); font-size: 10px; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; color: var(--color-bone); }
+.fl-chip-name { font-family: var(--font-mono); font-size: 8.5px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--color-steel); }
+.fl-chip:hover, .fl-chip:focus-visible, .fl-chip[data-hot] { border-color: var(--color-chartreuse); transform: translateX(-6px); }
+.fl-chip:hover .fl-chip-label, .fl-chip[data-hot] .fl-chip-label { color: var(--color-chartreuse); }
+.fl-chip[data-on] { background: var(--color-chartreuse); border-color: var(--color-chartreuse); }
+.fl-chip[data-on] .fl-chip-label, .fl-chip[data-on] .fl-chip-name { color: var(--color-pitch); }
+@media (max-width: 767px) {
+  .fl-parts { left: 0; right: 0; top: auto; bottom: 64px; transform: none; flex-direction: row; overflow-x: auto; padding: 0 16px; scrollbar-width: none; }
+  .fl-core-stage[data-selected] .fl-parts { transform: translateY(16px); }
+  .fl-chip { flex: none; align-items: flex-start; text-align: left; }
+  .fl-chip:hover, .fl-chip[data-hot] { transform: none; }
+}
+
+/* controls */
+.fl-btn { border: 2px solid var(--color-bone); background: var(--color-pitch); padding: 8px 16px; font-family: var(--font-display); font-size: 14px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--color-bone); box-shadow: 4px 4px 0 rgba(242, 239, 230, 0.25); transition: transform 0.12s, box-shadow 0.12s, background-color 0.2s, color 0.2s, border-color 0.2s; }
+.fl-btn:hover { border-color: var(--color-chartreuse); color: var(--color-chartreuse); }
+.fl-btn:active { transform: translate(3px, 3px); box-shadow: 0 0 0 transparent; }
+.fl-btn[data-on] { background: var(--color-chartreuse); border-color: var(--color-chartreuse); color: var(--color-pitch); }
+.fl-btn-ghost { border-color: rgba(242, 239, 230, 0.35); box-shadow: none; }
+.fl-icon-btn { display: grid; place-items: center; width: 28px; height: 28px; border: 1px solid rgba(242, 239, 230, 0.2); font-family: var(--font-mono); font-size: 12px; color: var(--color-bone); transition: border-color 0.2s, color 0.2s, background-color 0.2s; }
+.fl-icon-btn:hover, .fl-icon-btn:focus-visible { border-color: var(--color-chartreuse); color: var(--color-chartreuse); }
+
+/* inspect panel: right column on desktop, a bottom sheet on phones */
+.fl-panel-wrap { right: 24px; top: 24px; bottom: 24px; width: min(390px, calc(100% - 48px)); display: flex; align-items: flex-start; }
+.fl-panel { width: 100%; box-shadow: 0 30px 80px rgba(0, 0, 0, 0.7), inset 0 0 40px rgba(201, 242, 75, 0.04); animation: fl-panel-in 0.6s var(--fl-out) both; }
+@keyframes fl-panel-in { from { clip-path: inset(0 0 100% 0); opacity: 0.4; } to { clip-path: inset(0 0 0 0); opacity: 1; } }
+.fl-stagger { animation: fl-fade-up 0.55s var(--fl-out) both; animation-delay: calc(0.15s + var(--i, 0) * 60ms); }
+.fl-bar { animation: fl-bar 0.9s var(--fl-out) both; animation-delay: 0.4s; transform-origin: 0 50%; box-shadow: 0 0 8px rgba(201, 242, 75, 0.6); }
+@keyframes fl-bar { from { transform: scaleX(0); } }
+@media (max-width: 767px) {
+  .fl-panel-wrap { left: 10px; right: 10px; top: auto; bottom: 10px; width: auto; align-items: flex-end; }
+  /* the wrap has no definite height here, so the sheet caps itself */
+  .fl-panel { max-height: 60svh; animation-name: fl-sheet-in; }
+  @keyframes fl-sheet-in { from { transform: translateY(100%); } to { transform: none; } }
+}
+
+/* ═══════ prefers-reduced-motion: no tilt, no sweeps, no travel — content stays complete ═══════ */
+@media (prefers-reduced-motion: reduce) {
+  html[data-fl-js] [data-fx]:not([data-in]),
+  html[data-fl-js] [data-fx]:not([data-in]) > * { opacity: 1; transform: none; }
+  [data-fx="wipe"]::after { display: none; }
+  .fl-tilt { transform: none !important; }
+  .fl-title-line > span, .fl-fade-in, .fl-row, .fl-chip, .fl-panel, .fl-stagger, .fl-bar, .fl-spot-label { animation: none !important; }
+  .fl-shine, .fl-warm, .fl-spot-dot::after, .fl-card:hover::after { animation: none !important; }
+  .fl-shine { color: var(--color-chartreuse); background: none; }
+}
