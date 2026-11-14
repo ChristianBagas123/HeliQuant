@@ -20,8 +20,9 @@ directional signal.
 Funding-carry is a **yield** play, not alpha on price. It earns when funding is rich and the position is
 held delta-neutral, and it is single-venue executable. The rate is computed live from Bitget funding;
 `crash_class` comes from a fixed stress-test table in `firm/carry_signal.py` (re-run with `scripts/77`). Carry
-is not a validated edge in the registry. Most of the time there is **no carry above risk-free**, so the desk
-simply reports "nothing harvestable" and stays out of the directional vote.
+is not a validated edge in the registry. The verdict is **HARVEST** only when the annualized carry beats the
+risk-free rate **and** the asset's `crash_class` is `robust`; carry below risk-free, or an asset that is `lumpy`,
+`tame` or untested, is a **skip**. Either way the desk stays out of the directional vote.
 
 ## Output (shape — illustrative values)
 
@@ -38,5 +39,4 @@ simply reports "nothing harvestable" and stays out of the directional vote.
 ## Honest caveats
 
 Carry is **non-directional** — it never says "buy" or "sell" the asset; it flags a market-neutral yield
-when one exists. It is a monitor, not an executor, and it is quiet by design: most cycles report
-no harvestable carry.
+when one exists. It is a monitor, not an executor: it never opens a carry position itself.

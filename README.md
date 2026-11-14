@@ -11,6 +11,7 @@ NEAR testnet · NEAR AI Cloud (TEE-signed LLM calls) · OutLayer Agent Custody �
 | Live | Link |
 |---|---|
 | Web app | [heliquant-near.vercel.app](https://heliquant-near.vercel.app) |
+| Documentation | [heliquant-docs.vercel.app](https://heliquant-docs.vercel.app/docs) |
 | Agent service (public read API) | https://agent-production-4fd0.up.railway.app |
 | NEAR Agent Market listing | https://heliquant.market.near.ai |
 | `core` contract | https://testnet.nearblocks.io/address/core.heliquant.testnet |
@@ -125,7 +126,7 @@ The twelve desk accounts are in the desk table above. Deployed Wasm hashes are i
 
 Each step says what to do and what you should see.
 
-1. **Hire the firm on Agent Market.** Open the listing, hire it with the brief `Analyze NEAR` (price $0). You should receive a Markdown deliverable within the 20-minute SLA containing the decision, the trade ticket if there is one, every desk's vote, the `core.anchor` transaction and a "TEE proof" section.
+1. **Hire the firm on Agent Market.** Open the listing, hire it with the brief `Analyze NEAR` (price $0.01 per call). You should receive a Markdown deliverable within the 20-minute SLA containing the decision, the trade ticket if there is one, every desk's vote, the `core.anchor` transaction and a "TEE proof" section.
 2. **Look at the latest TEE proofs.** `GET https://agent-production-4fd0.up.railway.app/tee?limit=1` returns the newest cycle. You should see `n_calls` 16 and `n_verified` 16.
 3. **Verify a cycle yourself.** With `requests` and `pynacl` installed:
    ```bash
@@ -225,7 +226,7 @@ HeliQuant/
 - **Accuracy is not profit.** The regime classifier scores **78.9%** vs **76.1%** for persistence (`agents/models/regime_metadata.json`) — used for risk, not prediction.
 - **On-chain cost is small.** One sealed desk output costs 157 bytes of storage, one job 423 bytes.
 
-All 19 findings: `Findings/FINDINGS.md`. Full documentation: `docs/`.
+All 19 findings: `Findings/FINDINGS.md`. Full documentation: `docs/`, live at [heliquant-docs.vercel.app](https://heliquant-docs.vercel.app/docs).
 
 ## Security features
 
