@@ -13,6 +13,9 @@ import { useMotionValueEvent, useScroll } from "motion/react";
 
 import { NAV_LINKS } from "./data";
 
+/** The documentation site (docs/, its own Vercel project). */
+const DOCS_URL = "https://heliquant-docs.vercel.app/docs";
+
 export default function LandingNav() {
   const { scrollY } = useScroll();
   const [hidden, setHidden] = useState(false);
@@ -59,9 +62,20 @@ export default function LandingNav() {
           ))}
         </nav>
 
-        <a href="/app" data-cursor="press" className="ld-press border-2 border-bone bg-chartreuse px-4 py-2 font-display text-sm font-bold uppercase tracking-wide text-pitch">
-          Console
-        </a>
+        <div className="flex items-center gap-2 sm:gap-3">
+          <a
+            href={DOCS_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            data-cursor="press"
+            className="border-2 border-bone/60 px-3 py-2 font-display text-sm font-bold uppercase tracking-wide text-bone transition-colors hover:border-chartreuse hover:text-chartreuse focus-visible:border-chartreuse focus-visible:text-chartreuse sm:px-4"
+          >
+            Docs ↗
+          </a>
+          <a href="/app" data-cursor="press" className="ld-press border-2 border-bone bg-chartreuse px-4 py-2 font-display text-sm font-bold uppercase tracking-wide text-pitch">
+            Console
+          </a>
+        </div>
       </div>
     </header>
   );
