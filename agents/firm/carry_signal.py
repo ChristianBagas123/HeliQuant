@@ -71,6 +71,17 @@ def _read_cached_carry(symbol: str) -> dict | None:
     return None
 
 
+def _verdict(gross_ann: float, rf_pct: float, cls: str) -> str:
+    """Label carry: harvest only when it beats risk-free AND passes the crash stress test ('robust')."""
+    if gross_ann <= rf_pct:
+        return "skip — thin (below risk-free)"
+    if cls == "robust":
+        return "HARVEST — rich + crash-robust"
+    if cls == "lumpy":
+        return "skip — beats RF but crash-lumpy (size down)"
+    return "skip — beats RF but not crash-tested as robust"
+
+
 def live_carry(symbol: str, lookback_days: int = 60, rf_pct: float = RISK_FREE_PCT) -> dict | None:
     """Current carry attractiveness for `symbol` from trailing funding. Returns None if no data.
 
@@ -94,9 +105,7 @@ def live_carry(symbol: str, lookback_days: int = 60, rf_pct: float = RISK_FREE_P
         # asof = real compute time (funding just fetched). scripts/88 persists this dict to Supabase, so the
         # cloud /carry surfaces TRUE freshness; the cached read passes it through unchanged.
         "asof": datetime.now(timezone.utc).isoformat(timespec="seconds"),
-        "verdict": ("HARVEST — rich + crash-robust" if attractive else
-                    "skip — beats RF but crash-lumpy (size down)" if (gross_ann > rf_pct and cls == "lumpy") else
-                    "skip — thin (below risk-free)"),
+        "verdict": _verdict(gross_ann, rf_pct, cls),
     }
 
 
