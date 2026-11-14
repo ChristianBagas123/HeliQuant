@@ -7,8 +7,37 @@
    pitch shop-floor · carbon panels · bone ink · ONE chartreuse livery accent · hazard seams.
    Overrides Fumadocs' design tokens so the whole docs site wears the brand. */
 
-:root,
+/* LIGHT — "day garage": bone floor, pitch ink. Chartreuse is unreadable as text on bone, so text accents
+   use a deep olive of the same hue; chartreuse stays for fills (buttons, the hazard seam). */
+:root {
+  --color-fd-background: #f2efe6;          /* bone */
+  --color-fd-foreground: #0b0b0b;          /* pitch ink */
+  --color-fd-card: #e9e5d8;
+  --color-fd-card-foreground: #0b0b0b;
+  --color-fd-popover: #f7f5ef;
+  --color-fd-popover-foreground: #0b0b0b;
+  --color-fd-muted: #e2ddcf;
+  --color-fd-muted-foreground: #5c5c53;
+  --color-fd-border: rgba(11, 11, 11, 0.15);
+  --color-fd-primary: #4f6b00;             /* deep olive livery (readable on bone) */
+  --color-fd-primary-foreground: #f2efe6;
+  --color-fd-secondary: #e2ddcf;
+  --color-fd-secondary-foreground: #0b0b0b;
+  --color-fd-accent: #e2ddcf;
+  --color-fd-accent-foreground: #3f5600;
+  --color-fd-ring: #4f6b00;
+  --hq-link: #4f6b00;
+  --hq-plate: #e9e5d8;                     /* diagram plate */
+  --hq-dots: rgba(11, 11, 11, 0.05);
+  --hq-seam-dark: #0b0b0b;
+}
+
+/* DARK — "night garage", the brand default */
 .dark {
+  --hq-link: #c9f24b;
+  --hq-plate: #0e0e0c;
+  --hq-dots: rgba(242, 239, 230, 0.04);
+  --hq-seam-dark: #0b0b0b;
   --color-fd-background: #0b0b0b;          /* pitch — night shop floor */
   --color-fd-foreground: #f2efe6;          /* bone ink */
   --color-fd-card: #161614;                /* carbon panel */
@@ -29,6 +58,9 @@
 
 html {
   scrollbar-gutter: stable;
+  color-scheme: light;
+}
+html.dark {
   color-scheme: dark;
 }
 html > body[data-scroll-locked] {
@@ -38,7 +70,7 @@ html > body[data-scroll-locked] {
 
 body {
   font-family: 'Saira', ui-sans-serif, system-ui, sans-serif;
-  background: #0b0b0b;
+  background: var(--color-fd-background);
 }
 
 /* condensed motorsport headlines */
@@ -52,7 +84,7 @@ code, pre, kbd, .font-mono {
 
 /* hazard seam under the top nav — the signature motif */
 #nd-nav, header#nd-subnav, header {
-  border-bottom-color: rgba(242, 239, 230, 0.14);
+  border-bottom-color: var(--color-fd-border);
 }
 #nd-nav::after {
   content: '';
@@ -64,13 +96,13 @@ code, pre, kbd, .font-mono {
 
 /* carbon dot-grid texture on the page body */
 #nd-docs-layout, .container, main {
-  background-image: radial-gradient(rgba(242, 239, 230, 0.04) 1px, transparent 1px);
+  background-image: radial-gradient(var(--hq-dots) 1px, transparent 1px);
   background-size: 18px 18px;
 }
 
-/* chartreuse links + active sidebar = livery accent */
-article a { color: #c9f24b; text-underline-offset: 3px; }
-a[data-active='true'] { color: #c9f24b !important; }
+/* livery-accent links + active sidebar (chartreuse at night, deep olive by day) */
+article a { color: var(--hq-link); text-underline-offset: 3px; }
+a[data-active='true'] { color: var(--hq-link) !important; }
 
 /* gear-spin keyframe for any automotive accent SVG (use className="gear-spin") */
 @keyframes hq-gear { from { transform: rotate(0); } to { transform: rotate(360deg); } }
@@ -83,15 +115,12 @@ a[data-active='true'] { color: #c9f24b !important; }
 }
 
 /* ── code blocks ───────────────────────────────────────────────────────────
-   This docs site is ALWAYS dark (forced via :root above; <html> has no `.dark`
-   class), so Fumadocs' dual-theme Shiki — which swaps to its dark palette only
-   under `.dark` — was rendering the LIGHT tokens (dark-grey on near-black =
-   invisible). Force the dark (github-dark-high-contrast) tokens + bg so JSON /
-   code reads high-contrast. */
-.shiki,
-.shiki span {
+   Shiki emits light + dark tokens. In dark mode force the dark (github-dark-high-contrast)
+   tokens + bg so code reads high-contrast on the pitch floor; light mode keeps the light tokens. */
+.dark .shiki,
+.dark .shiki span {
   color: var(--shiki-dark, #f0f3f6) !important;
 }
-.shiki {
+.dark .shiki {
   background-color: var(--shiki-dark-bg, #0a0c10) !important;
 }

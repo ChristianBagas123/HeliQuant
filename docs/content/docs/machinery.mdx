@@ -171,8 +171,8 @@ ticket can't clear the R:R gate it **re-prompts the PM up to twice**, then overr
 ## The trading floor
 
 - **Campaign** (`campaign.py · step`) — a continuous **paper floor** at live prices. It computes
-  its **own deterministic desk votes** (`desk_votes` — flow-intel + z-score positioning extremes
-  + the Hyperliquid whale read; **no LLM**), then every candidate must clear an ordered
+  its **own deterministic desk votes** (`desk_votes` — flow-intel, z-score positioning extremes
+  and the Hyperliquid whale read; **no LLM**), then every candidate must clear an ordered
   **[entry-quality pipeline](/docs/architecture#the-entry-quality-pipeline)** — macro de-risk, deep-cold
   bench, cold-cadence, mid-range chop, clear-trend, don't-fight-trend flip, **TV 1h-vs-1D**, **smart-money
   whale veto**, **over-extension**, and finally the **LLM PM sign-off** (the merge, above). Approved trades
