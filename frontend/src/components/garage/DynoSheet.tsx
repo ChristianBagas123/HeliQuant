@@ -236,9 +236,9 @@ export default function DynoSheet() {
 
       <Note>
         the dyno doesn&apos;t lie. the directional floor has <span className="text-bone">no validated edge</span>, so this
-        curve reads ~breakeven/loss — and we show it anyway. the only positive edge we found is{" "}
-        <span className="text-chartreuse">delta-neutral funding-carry</span> (non-directional), measured on its own
-        bench. <span className="text-signal2">honesty is the product.</span>
+        curve reads ~breakeven/loss — and we show it anyway. <span className="text-chartreuse">delta-neutral funding-carry</span>{" "}
+        is tracked on its own bench as a market-neutral yield monitor, not a validated edge.{" "}
+        <span className="text-signal2">honesty is the product.</span>
       </Note>
     </div>
   );

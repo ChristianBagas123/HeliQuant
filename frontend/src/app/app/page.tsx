@@ -53,7 +53,7 @@ export default function AppPage() {
           <div data-fx="rise" className="fl-card mt-14 flex flex-col items-start gap-4 border-2 border-bone/25 bg-carbon px-6 py-7 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <p className="font-display text-2xl font-bold uppercase text-bone">Want to run capital through it?</p>
-              <p className="mt-1 text-sm text-bone/55">Deposit into the on-chain escrow, set the term, let the firm decide and settle on NEAR.</p>
+              <p className="mt-1 text-sm text-bone/55">Deposit into the on-chain escrow, set the term, and settle it on NEAR when it matures.</p>
             </div>
             <a
               href="/hire"

@@ -3,6 +3,10 @@
  * campaign.ts re-exports them for the components.
  */
 
+/** The firm's traded basket (same list as agents/firm/market_worker.py BASKET). Pages that hide leftovers of
+ *  older runs filter on this set. */
+export const TRADED_BASKET: ReadonlySet<string> = new Set(["BTC", "ETH", "SOL", "HYPE", "SUI", "XRP", "NEAR"]);
+
 /** Trade-venue badge content. A real Bitget Demo fill reads ⚡ BITGET DEMO (teal);
  *  anything else (null/absent = paper at live prices) reads 📄 PAPER (steel). Returns the label
  *  plus the border/text Tailwind classes — the caller adds its own sibling-chip sizing. */

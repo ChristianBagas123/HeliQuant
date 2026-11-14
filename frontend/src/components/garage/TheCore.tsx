@@ -210,7 +210,7 @@ export default function TheCore() {
         {/* header */}
         <div className="fl-core-head pointer-events-none absolute left-0 top-0 z-10 max-w-xl px-6 pt-8 sm:px-10">
           <p className="font-mono text-[11px] uppercase tracking-[0.3em] text-steel">
-            <span className="text-chartreuse">▮</span> live webgl · eleven parts · the firm, the PM and its desks
+            <span className="text-chartreuse">▮</span> live webgl · eleven parts · the firm, the PM and nine of its desks
           </p>
           <h2 className="mt-3 font-display font-extrabold uppercase leading-[0.9] text-bone" style={{ fontSize: "clamp(2.4rem, 5vw, 4.2rem)" }}>
             The <span className="fl-shine text-chartreuse">core</span>

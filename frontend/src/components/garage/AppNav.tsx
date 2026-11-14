@@ -13,6 +13,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState, useSyncExternalStore } from "react";
 
+import NavWallet from "@/components/garage/NavWallet";
 import { isOwnerEngine } from "@/lib/engine";
 
 const LINKS = [
@@ -59,14 +60,14 @@ export default function AppNav() {
 
   return (
     <header className="sticky top-0 z-50 border-b-2 border-bone/15 bg-pitch/85 backdrop-blur-md">
-      <div className="mx-auto flex max-w-[1600px] items-center justify-between gap-6 px-6 py-3 sm:px-10 xl:px-8">
+      <div className="mx-auto flex max-w-[1600px] items-center justify-between gap-3 px-4 py-3 sm:gap-6 sm:px-10 xl:px-8">
         {/* brand mark → exit back to the landing site · + the execution-venue mark */}
         <div className="flex shrink-0 items-center gap-3">
           <Link href="/" className="flex items-center gap-3" aria-label="HeliQuant — back to site">
             <span className="gr-shadow-bone grid h-10 w-10 place-items-center border-2 border-pitch bg-bone p-1">
               <Image src="/brand/logo.png" alt="HeliQuant rotor mark" width={32} height={33} priority />
             </span>
-            <span className="font-display text-2xl font-extrabold uppercase tracking-wide text-bone">
+            <span className="hidden font-display text-2xl font-extrabold uppercase tracking-wide text-bone sm:inline">
               Heli<span className="text-chartreuse">Quant</span>
             </span>
           </Link>
@@ -79,7 +80,7 @@ export default function AppNav() {
         </div>
 
         {/* functional bays — active bay reads chartreuse */}
-        <nav className="hidden min-w-0 items-center gap-x-4 xl:flex min-[1720px]:gap-x-6">
+        <nav className="hidden min-w-0 items-center gap-x-4 min-[1440px]:flex min-[1720px]:gap-x-6">
           {visible.map((l) => {
             const active = isActive(pathname, l.href);
             return (
@@ -98,8 +99,9 @@ export default function AppNav() {
           })}
         </nav>
 
-        {/* right: exit to the public site (desktop) · hamburger (mobile) */}
+        {/* right: wallet (every page) · exit to the public site (wide desktop) · hamburger (mobile) */}
         <div className="flex shrink-0 items-center gap-3">
+          <NavWallet />
           <Link
             href="/"
             className="gr-press hidden whitespace-nowrap border-2 border-bone/40 bg-transparent px-4 py-2 font-display text-sm font-bold uppercase tracking-wide text-bone min-[1720px]:inline-block"
@@ -111,7 +113,7 @@ export default function AppNav() {
             aria-label="Toggle navigation"
             aria-expanded={open}
             onClick={() => setOpen((v) => !v)}
-            className="grid h-10 w-10 place-items-center border-2 border-bone/40 text-bone xl:hidden"
+            className="grid h-10 w-10 shrink-0 place-items-center border-2 border-bone/40 text-bone min-[1440px]:hidden"
           >
             <span className="font-mono text-lg leading-none">{open ? "✕" : "≡"}</span>
           </button>
@@ -120,7 +122,7 @@ export default function AppNav() {
 
       {/* mobile drawer — every bay reachable without typing a route */}
       {open && (
-        <nav className="border-t-2 border-bone/15 bg-pitch/95 px-6 py-4 xl:hidden">
+        <nav className="border-t-2 border-bone/15 bg-pitch/95 px-6 py-4 min-[1440px]:hidden">
           <ul className="flex flex-col gap-1">
             {visible.map((l) => {
               const active = isActive(pathname, l.href);

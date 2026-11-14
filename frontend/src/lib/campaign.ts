@@ -143,7 +143,7 @@ export type EdgeRec = {
 export type EdgeRegistry = {
   validated: Record<string, EdgeRec>;
   candidate: Record<string, EdgeRec>;
-  last_run?: string | null; // ISO of the last edge-lab sweep — proves the lab is still running
+  last_run?: string | null; // latest last_confirm_bar on an edge (its last confirmation on new data); null if none
 };
 
 export async function fetchDesks(): Promise<DeskWeights | null> {
@@ -380,4 +380,4 @@ export function laneFrac(p: OpenPosition): number | null {
   return Math.max(0, Math.min(1, f));
 }
 
-export { venueBadge, pairLabel, venueLabel } from "./venue";
+export { venueBadge, pairLabel, venueLabel, TRADED_BASKET } from "./venue";

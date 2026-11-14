@@ -13,7 +13,7 @@
 import { useEffect, useState } from "react";
 
 import { nearblocksTx } from "@/lib/contracts";
-import { fetchTrades, venueLabel, type Trade, type TradeLog } from "@/lib/campaign";
+import { TRADED_BASKET, fetchTrades, venueLabel, type Trade, type TradeLog } from "@/lib/campaign";
 import { Note, Stat, StatStrip } from "@/components/garage/bay/parts";
 
 const POLL_MS = 20000;
@@ -28,7 +28,6 @@ const REASON_META: Record<string, { color: string; label: string }> = {
   NEARTP: { color: "text-chartreuse border-chartreuse/50", label: "banked near TP" },
 };
 const REGIME_COLOR: Record<string, string> = { up: "text-chartreuse", down: "text-signal2", flat: "text-steel" };
-const BASKET = new Set(["BTC", "ETH", "SOL", "HYPE", "SUI", "XRP"]);
 
 type Filter = "all" | "wins" | "losses" | "bitget" | "paper";
 const isBitget = (t: Trade) => (t.venue ?? "").includes("bitget");
@@ -81,7 +80,7 @@ export default function TradeLedger() {
   }, []);
 
   // the live Bitget basket — any non-basket trade is dropped from the ledger + its stats
-  const trades = (log?.trades ?? []).filter((t) => BASKET.has((t.asset || "").toUpperCase()));
+  const trades = (log?.trades ?? []).filter((t) => TRADED_BASKET.has((t.asset || "").toUpperCase()));
   const wins = trades.filter((t) => (t.pnl_usd ?? 0) > 0).length;
   const winPct = trades.length ? Math.round((wins / trades.length) * 1000) / 10 : 0;
   const net = trades.reduce((s, t) => s + (t.pnl_usd ?? 0), 0);

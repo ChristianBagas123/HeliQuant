@@ -3,9 +3,9 @@
 /**
  * /hire — HeliQuant's on-chain trading PRODUCT: "hire the firm".
  *
- * A client deposits mUSDC into the core contract's escrow with ONE `ft_transfer_call` (no approve step on NEAR); the
- * firm runs its gated decision loop and, on NEAR today, most often ABSTAINS (capital preserved — that restraint IS
- * the product). When the job matures anyone may settle it on-chain; profit splits by performance fee, losses are the
+ * A client deposits mUSDC into the core contract's escrow with ONE `ft_transfer_call` (no approve step on NEAR). Only
+ * the executor account can trade a job (mUSDC <-> wNEAR on Rhea); today the operator runs those trades with
+ * agents/scripts/executor_demo.py, the firm's loop does not trade jobs. When the job matures anyone may settle it on-chain; profit splits by performance fee, losses are the
  * client's. A payout left in the contract can be pulled with `claim_payout`.
  *
  * Stack: Next 16 · React 19 · near-connect-hooks · motion/react. Strict TS, no `any`.
@@ -523,8 +523,10 @@ function HirePanel({ account, onHired }: { account: string; onHired: () => void 
 
         {/* honest expectation-setting */}
         <p className="bay-note mt-5 bg-pitch px-4 py-3 font-mono text-[10px] uppercase leading-relaxed tracking-[0.1em] text-bone/70">
-          The firm escrows your funds and runs its gated decision loop. On NEAR today it most often{" "}
-          <span className="text-bone">abstains — capital preserved</span>: the edge lab found no validated edge for NEAR. That discipline is the product, not a bug.
+          Your funds sit in the core contract. Only the firm&apos;s executor account can trade them (mUSDC ↔ wNEAR on Rhea), and
+          today the operator runs those trades — the firm does not trade jobs automatically. With no validated edge for NEAR the
+          firm <span className="text-bone">abstains — capital preserved</span>, so a job usually settles at its principal. That
+          discipline is the product, not a bug.
         </p>
       </div>
     </Panel>
@@ -634,7 +636,7 @@ function EmptyJobs() {
         </svg>
         <p className="mt-5 font-display text-xl font-extrabold uppercase tracking-wide text-bone">No jobs yet</p>
         <p className="mt-2 max-w-sm font-mono text-[10px] uppercase leading-relaxed tracking-[0.12em] text-steel">
-          Get test USDC, then hire the firm above. Your escrowed jobs — and every gated decision — appear here.
+          Get test USDC, then hire the firm above. Your escrowed jobs — balance, trades and settlement — appear here.
         </p>
       </div>
     </Panel>
@@ -890,8 +892,8 @@ const FLOW: { t: string; d: string; icon: React.ReactNode }[] = [
     ),
   },
   {
-    t: "Gated loop",
-    d: "Twelve desks read, the PM decides. No validated edge → ABSTAIN, capital preserved.",
+    t: "Executor",
+    d: "Only the executor account can swap the job (mUSDC ↔ wNEAR on Rhea), run by the operator today. No validated edge → no trade, capital preserved.",
     icon: (
       <>
         <circle cx="19" cy="19" r="11" fill="none" stroke="currentColor" strokeWidth="2.4" />
@@ -949,7 +951,8 @@ export default function AppPage() {
       title={["Hire the", "engine"]}
       lead={
         <>
-          Deposit test USDC into the on-chain escrow. The firm runs its gated decision loop for the term you set, then settles deterministically —{" "}
+          Deposit test USDC into the on-chain escrow for the term you set. Only the firm&apos;s executor can trade it, and at
+          maturity anyone settles it on-chain, deterministically —{" "}
           <span className="text-bone">profit splits by performance fee, losses are yours.</span> No counterparty, full audit trail.
         </>
       }

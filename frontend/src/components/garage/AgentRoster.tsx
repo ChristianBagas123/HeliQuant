@@ -92,7 +92,7 @@ export default function AgentRoster() {
       <StatStrip>
         <Stat i={0} k="registered agents" v={`${data?.agents?.length ?? 0}`} sub={data?.network ? `NEP-171 · ${data.network}` : "NEP-171"} />
         <Stat i={1} k="outputs sealed on-chain" v={`${sealed}`} tone={sealed ? "good" : "muted"} sub="credentials across the crew" />
-        <Stat i={2} k="TEE-verified · latest cycle" v={`${teeN}`} tone={teeN ? "good" : "muted"} sub={tee ? "signed LLM calls, ed25519" : "no bundle read"} />
+        <Stat i={2} k="TEE-verified desks · latest cycle" v={`${teeN}`} tone={teeN ? "good" : "muted"} sub={tee ? "desks whose LLM call is signed, ed25519" : "no bundle read"} />
         <Stat i={3} k="ML desk" v={`${desks.filter((a) => a.ml).length}`} sub="Regime · XGBoost" />
       </StatStrip>
 

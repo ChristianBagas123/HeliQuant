@@ -949,7 +949,7 @@ export function buildEngine(): Engine {
     camL.rotation.z = -theta / 2;
     camR.rotation.z = -theta / 2;
     idler.rotation.z = theta * 1.6;
-    altPulley.rotation.y = -theta * 2.4;
+    altPulley.rotation.z = -theta * 2.4; // the pulley's axis is Z (geometry rotated in build)
     altFan.rotation.z = -theta * 2.4;
 
     for (const p of pistons) {

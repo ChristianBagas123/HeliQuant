@@ -78,7 +78,7 @@ export default function CarryDesk() {
               <span className="bay-lamp" data-on={c ? (waiting ? "wait" : "go") : undefined} />
               {!c ? "—" : waiting ? "none — wait" : "live"}
             </p>
-            <p className="mt-1.5 font-mono text-[9px] uppercase tracking-[0.16em] text-bone/40">{waiting ? "funding thin → skip" : "carry clears the bar"}</p>
+            <p className="mt-1.5 font-mono text-[9px] uppercase tracking-[0.16em] text-bone/40">{waiting ? "nothing rich + crash-robust → wait" : "carry clears the bar"}</p>
           </div>
         </StatStrip>
 
@@ -106,7 +106,7 @@ export default function CarryDesk() {
           {harvestable === ""
             ? "waiting for the first live funding read."
             : harvestable.startsWith("none")
-              ? "right now: funding is thin across the board — nothing clears risk-free + crash-robust, so the firm waits."
+              ? "right now: no asset is both above risk-free and crash-robust, so the firm waits."
               : harvestable}
         </Note>
       </section>
